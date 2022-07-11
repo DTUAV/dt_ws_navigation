@@ -1,0 +1,7 @@
+<launch>
+<node name = "map_to_image" pkg = "hector_compressed_map_transport" type = "map_to_image_node" output="screen">
+      <param name = "pose" value = "/pose" />
+      <param name = "map" value = "/map" />
+</node>
+
+</launch>

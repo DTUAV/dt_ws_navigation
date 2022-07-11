@@ -1,0 +1,16 @@
+<launch>
+<node name = "dt_map2d_fusion_node" type = "dt_map2d_fusion_node" pkg = "dt_map2d_fusion" output = "screen">
+      <param name = "map_size_x" value = "50" />  <!--the size x of map data-->
+      <param name = "map_size_y" value = "50" />  <!--the size y of map data-->
+      <param name = "map_num" value = "2" />      <!--the number of map data-->
+      <param name = "map_resolution" value = "0.1" />
+      <param name = "map_fusion_hz" value = "1.0" /> <!--the frenqency of map fuse-->
+      <param name = "start_pos_x" value = "0.0" />
+      <param name = "start_pos_y" value = "0.0" />
+      <param name = "start_pos_z" value = "0.0" />
+      <param name = "points_num" value = "5" />
+      <param name = "scan_range" value = "30.0" />
+
+</node>
+
+</launch>
