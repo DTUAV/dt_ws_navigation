@@ -10,11 +10,23 @@ generate_mission_point::generate_mission_point()
   nh.param<float>("start_pos_y", startPosY, 0);
   nh.param<float>("start_pos_z", startPosZ, 0);
   nh.param<int>("points_num", pointsNum, 10);
-  nh.param<float>("map_resolution", mapScale, 0.1);
+  nh.param<float>("map_resolution", mapScale, 1.0);
   nh.param<float>("scan_range", scanRange, 30.0);
+  std::string waypoints_topic = "/planning/path";
+  nh.param<std::string>("waypoints_topic", waypoints_topic, "/planning/path");
+  std::string missionStatus_topic = "/mission/status";
+  nh.param<std::string>("finish_mission_topic", missionStatus_topic, "/mission/status");
+
+  waypointsPub = nh.advertise<dt_message_package::waypoints>(waypoints_topic, 1);
+  missionStatusPub = nh.advertise<std_msgs::Bool>(missionStatus_topic, 1);
+
+  scanRange = scanRange / mapScale;
 
   isFinish = false;
+}
 
+bool generate_mission_point::getIsFinish() {
+  return isFinish;
 }
 
 static bool greater_sort(empty_point_info a, empty_point_info b) {
@@ -35,6 +47,7 @@ void generate_mission_point::count_waypoints(const std::vector<pose> &poses, con
     ROS_WARN("dt_map2d_fusion-generate_mission_point: the object poses are empty");
     return;
   }
+
   // world points to grid points
   int waypointNum = poses.size();
   allWaypoints.resize(waypointNum);
@@ -48,9 +61,11 @@ void generate_mission_point::count_waypoints(const std::vector<pose> &poses, con
 
     std::cout<< "gridPose " << i << ": ( " << tem.gridX << ", " << tem.gridY << " )" << std::endl;
   }
+
   //find empty grid
   int gridMapData[mapSizeX][mapSizeY];
   std::vector<gridXY> emptyData;
+
   //map to 2d matrix
   for(int i = 0; i < mapSizeX * mapSizeY; ++i) {
     gridMapData[i / mapSizeY][i - (i / mapSizeY) * mapSizeX] = fusionMap.data.at(i);
@@ -66,8 +81,12 @@ void generate_mission_point::count_waypoints(const std::vector<pose> &poses, con
   if(emptyData.empty()) {
     ROS_INFO("All environment have been exprolated");
     isFinish = true;
+    std_msgs::Bool missionMsg;
+    missionMsg.data = true;
+    missionStatusPub.publish(missionMsg);//============publish the mission ending==================
     return;
   }
+
   //let each point to center and detected some points with const range
   std::vector<empty_point_info> cirsInfo;
   for(int i = 0; i < emptyData.size(); i++) {
@@ -83,6 +102,7 @@ void generate_mission_point::count_waypoints(const std::vector<pose> &poses, con
 
     std::cout << "empty_point_info " << i << ": ( " << tem.mapIndex.gridX << ", " << tem.mapIndex.gridY << " )" << "containNum: " << tem.containNum << std::endl;
   }
+
   //find n data;
   sort(cirsInfo.begin(), cirsInfo.end(), greater_sort);
   std::vector<gridXY> gridWaypoints;
@@ -136,6 +156,7 @@ void generate_mission_point::count_waypoints(const std::vector<pose> &poses, con
     allWaypoints.at(waypointsDivInfo.at(0).id).zs.push_back(0);
     waypointsDivInfo.clear();
   }
+
   //grid points to world points
   for(auto &val : allWaypoints) {
     for(auto &temX : val.xs) temX = (temX - mapSizeX / 2) * mapScale + startPosX;
@@ -149,6 +170,22 @@ void generate_mission_point::count_waypoints(const std::vector<pose> &poses, con
       }
     }
   }
+
+  //publish waypoints
+  dt_message_package::waypoints wayPointMsg;
+  wayPointMsg.header.frame_id = "fusion_map";
+  wayPointMsg.points.resize(waypointNum);
+  for(int i = 0; i < allWaypoints.size(); ++i) {
+    wayPointMsg.points.at(i).object_id = i;
+    for(int j = 0; j < allWaypoints.at(i).xs.size(); ++j) {
+      geometry_msgs::Point posMsg;
+      posMsg.x = allWaypoints.at(i).xs.at(j);
+      posMsg.y = allWaypoints.at(i).ys.at(j);
+      posMsg.z = allWaypoints.at(i).zs.at(j);
+      wayPointMsg.points.at(i).position.push_back(posMsg);
+    }
+  }
+  waypointsPub.publish(wayPointMsg);
 }
 
 

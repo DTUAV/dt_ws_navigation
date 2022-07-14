@@ -49,12 +49,16 @@ class MapAsImageProvider
 {
 public:
   MapAsImageProvider()
-    : pn_("~")
+    : pn_("~"), need_map_size_x_(50.0), need_map_size_y_(50.0)
   {
+
+    pn_.param<float>("need_map_size_x", need_map_size_x_, 50.0);
+    pn_.param<float>("need_map_size_y", need_map_size_y_, 50.0);
 
     image_transport_ = new image_transport::ImageTransport(n_);
     image_transport_publisher_full_ = image_transport_->advertise("map_image/full", 1);
     image_transport_publisher_tile_ = image_transport_->advertise("map_image/tile", 1);
+    image_transport_publisher_need_map_ = image_transport_->advertise("map_image/need", 1);//need map publisher
 
     pose_sub_ = n_.subscribe("pose", 1, &MapAsImageProvider::poseCallback, this);
     map_sub_ = n_.subscribe("map", 1, &MapAsImageProvider::mapCallback, this);
@@ -65,6 +69,9 @@ public:
 
     cv_img_tile_.header.frame_id = "map_image";
     cv_img_tile_.encoding = sensor_msgs::image_encodings::MONO8;
+
+    cv_img_need_.header.frame_id = "map_image";//
+    cv_img_need_.encoding = sensor_msgs::image_encodings::MONO8;//
 
     //Fixed cell width for tile based image, use dynamic_reconfigure for this later
     p_size_tiled_map_image_x_ = 64;
@@ -138,6 +145,50 @@ public:
       }
       image_transport_publisher_full_.publish(cv_img_full_.toImageMsg());
     }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    if (image_transport_publisher_need_map_.getNumSubscribers() > 0){
+      cv::Mat* map_mat  = &cv_img_need_.image;
+
+      if(need_map_size_x_ > size_x || need_map_size_y_ > size_y) {
+        ROS_WARN("map_to_image_node-->the size of all map is less than need map");
+      }
+      else {
+        *map_mat = cv::Mat(need_map_size_x_, need_map_size_y_, CV_8U);
+        const std::vector<int8_t>& map_data (map->data);
+        unsigned char *map_mat_data_p = (unsigned char*) map_mat->data;
+
+        int start_y = (size_y - need_map_size_y_) / 2;
+        int start_x = (size_x - need_map_size_x_) / 2;
+        int end_x = start_x + need_map_size_x_;
+        int end_y = start_y + need_map_size_y_;
+
+        for(int y = end_y - 1; y >= 0; --y) {
+          int idx_map_y = size_x * (size_y - y);
+          int idx_img_y = need_map_size_x_ * y;
+          for(int x = start_x; x < end_x; ++x) {
+            int idx = idx_img_y + x;
+            switch (map_data[idx_map_y + x])
+            {
+            case -1:
+              map_mat_data_p[idx] = 127;
+              break;
+
+            case 0:
+              map_mat_data_p[idx] = 255;
+              break;
+
+            case 100:
+              map_mat_data_p[idx] = 0;
+              break;
+            }
+          }
+        }
+        image_transport_publisher_need_map_.publish(cv_img_full_.toImageMsg());
+      }
+    }
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 
     // Only if someone is subscribed to it, do work and publish tile-based map image Also check if pose_ptr_ is valid
     if ((image_transport_publisher_tile_.getNumSubscribers() > 0) && (pose_ptr_)){
@@ -229,7 +280,7 @@ public:
             map_mat_data_p[img_index] = 0;
             break;
           }
-        }        
+        }
       }
       image_transport_publisher_tile_.publish(cv_img_tile_.toImageMsg());
     }
@@ -240,6 +291,7 @@ public:
 
   image_transport::Publisher image_transport_publisher_full_;
   image_transport::Publisher image_transport_publisher_tile_;
+  image_transport::Publisher image_transport_publisher_need_map_;//
 
   image_transport::ImageTransport* image_transport_;
 
@@ -247,9 +299,13 @@ public:
 
   cv_bridge::CvImage cv_img_full_;
   cv_bridge::CvImage cv_img_tile_;
+  cv_bridge::CvImage cv_img_need_;//
 
   ros::NodeHandle n_;
   ros::NodeHandle pn_;
+
+  float need_map_size_x_;//
+  float need_map_size_y_;//
 
   int p_size_tiled_map_image_x_;
   int p_size_tiled_map_image_y_;

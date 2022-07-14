@@ -7,7 +7,7 @@ int main(int argv, char** argc) {
   pose car1Pos, car2Pos;
   car1Pos.curPosX = 2;
   car1Pos.curPosY = 4;
-  car2Pos.curPosX = 1;
+  car2Pos.curPosX = 5;
   car2Pos.curPosY = 4.2;
   poses.push_back(car1Pos);
   poses.push_back(car2Pos);

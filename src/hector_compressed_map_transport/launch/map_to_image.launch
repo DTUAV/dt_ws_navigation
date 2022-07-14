@@ -2,6 +2,9 @@
 <node name = "map_to_image" pkg = "hector_compressed_map_transport" type = "map_to_image_node" output="screen">
       <param name = "pose" value = "/pose" />
       <param name = "map" value = "/map" />
+      <param name = "need_map_size_x" value = "50" /> <!-- The map size x we need -->
+      <param name = "need_map_size_y" value = "50" /> <!-- The map size y we need -->
+
 </node>
 
 </launch>

@@ -279,5 +279,6 @@ struct MissionWaypointsMessage {
 };
 
 
+
 }
 #endif // DEFINE_COMMON_H

@@ -1,7 +1,9 @@
 #ifndef GENERATE_MISSION_POINT_H
 #define GENERATE_MISSION_POINT_H
 #include "ros/ros.h"
-#include "data_source.h"
+#include "dt_message_package/waypoints.h"
+#include "common.h"
+#include "std_msgs/Bool.h"
 
 namespace dt_map2d_fusion {
 
@@ -11,6 +13,7 @@ public:
   generate_mission_point();
   void count_waypoints(const std::vector<pose> &poses, const map_data &fusionMap);
   std::vector<waypoint> get_waypoints();
+  bool getIsFinish();
 
 private:
   std::vector<waypoint> allWaypoints;
@@ -23,6 +26,9 @@ private:
   float mapScale; //the map scale
   bool isFinish;
   float scanRange;
+
+  ros::Publisher waypointsPub;
+  ros::Publisher missionStatusPub;
 };
 }
 

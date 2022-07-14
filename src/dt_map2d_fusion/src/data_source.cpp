@@ -1,5 +1,10 @@
 #include "../include/dt_map2d_fusion/data_source.h"
 using namespace dt_map2d_fusion;
+
+data_source::~data_source() {
+  delete generatePointNode;
+}
+
 data_source::data_source() : mapSizeX(50), mapSizeY(50), mapNum(2)
 {
   ros::NodeHandle nh("~");
@@ -17,7 +22,7 @@ data_source::data_source() : mapSizeX(50), mapSizeY(50), mapNum(2)
   fusionMap.sizeX = mapSizeX;
   fusionMap.sizeY = mapSizeY;
   fusionMap.data.resize(mapSizeX * mapSizeY);
-  for(auto &val : fusionMap.data) val = 127;
+  for(auto &val : fusionMap.data) val = -1;
 
   fusionMapDataMsg.info.height = mapSizeY;
   fusionMapDataMsg.info.width = mapSizeX;
@@ -36,6 +41,8 @@ data_source::data_source() : mapSizeX(50), mapSizeY(50), mapNum(2)
   fusionMapPub = nh.advertise<nav_msgs::OccupancyGrid>(fusionMapPubTopic, 1);
   mapFusionTimer = nh.createTimer(ros::Duration(1 / mapFusionHz), &data_source::map_fusion_timer_cb, this);
 
+  generatePointNode = new generate_mission_point();
+
   test_data_source();
 }
 
@@ -51,11 +58,11 @@ void data_source::test_data_source() {
   for(auto &val : mapData1.data) val = -1;
   for(auto &val : mapData2.data) val = -1;
 
-  for(int i = 0; i < (mapSizeX * mapSizeY)/2; i++) {
+  for(int i = 0; i < (mapSizeX * mapSizeY) / 2; i++) {
     if(i < mapSizeX * 2)
       mapData1.data.at(i) = 10;
     else mapData1.data.at(i) = 0;
-      mapData2.data.at(i + (mapSizeX * mapSizeY)/2) = 100;
+      mapData2.data.at(i + (mapSizeX * mapSizeY) / 2) = 100;
   }
   maps.at(0) = mapData1;
   maps.at(1) = mapData2;
@@ -126,6 +133,16 @@ void data_source::cloud_msg_sub_cb(const dt_message_package::CloudMessagePtr& ms
     }
     break;
   }
+  case FinishOneMissionMessageID: {
+    DTUAV::FinishOneMissionMessage finishOneMsg;
+    bool is_load = x2struct::X::loadjson(msg.get()->MessageData, finishOneMsg, false);
+    if(is_load) {
+      if(finishOneMsg.isFinish) {
+        generatePointNode->count_waypoints(poses,fusionMap); //===================== run generate waypoints=================================
+      }
+    }
+  }
+    break;
   default: break;
 
   }
