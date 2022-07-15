@@ -41,6 +41,45 @@
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
 //register this planner as a BaseGlobalPlanner plugin
+
+/*
+ * 注册这个规划器为全局规划器，如果是自定义全局规划器，这个需要添加
+#define PLUGINLIB_EXPORT_CLASS(class_type, base_class_type) \
+  CLASS_LOADER_REGISTER_CLASS(class_type, base_class_type);
+  文件如下
+#define CLASS_LOADER__REGISTER_MACRO_HPP_
+
+#include <string>
+
+#include "console_bridge/console.h"
+
+#include "class_loader/class_loader_core.hpp"
+#include "class_loader/console_bridge_compatibility.hpp"
+
+#define CLASS_LOADER_REGISTER_CLASS_INTERNAL_WITH_MESSAGE(Derived, Base, UniqueID, Message) \
+  namespace \
+  { \
+  struct ProxyExec ## UniqueID \
+  { \
+    typedef  Derived _derived; \
+    typedef  Base _base; \
+    ProxyExec ## UniqueID() \
+    { \
+      if (!std::string(Message).empty()) { \
+        CONSOLE_BRIDGE_logInform("%s", Message);} \
+      class_loader::class_loader_private::registerPlugin<_derived, _base>(#Derived, #Base); \
+    } \
+  }; \
+  static ProxyExec ## UniqueID g_register_plugin_ ## UniqueID; \
+  }  // namespace
+#define CLASS_LOADER_REGISTER_CLASS_INTERNAL_HOP1_WITH_MESSAGE(Derived, Base, UniqueID, Message) \
+  CLASS_LOADER_REGISTER_CLASS_INTERNAL_WITH_MESSAGE(Derived, Base, UniqueID, Message)
+#define CLASS_LOADER_REGISTER_CLASS_WITH_MESSAGE(Derived, Base, Message) \
+  CLASS_LOADER_REGISTER_CLASS_INTERNAL_HOP1_WITH_MESSAGE(Derived, Base, __COUNTER__, Message)
+#define CLASS_LOADER_REGISTER_CLASS(Derived, Base) \
+  CLASS_LOADER_REGISTER_CLASS_WITH_MESSAGE(Derived, Base, "")
+#endif  // CLASS_LOADER__REGISTER_MACRO_HPP_
+*/
 PLUGINLIB_EXPORT_CLASS(carrot_planner::CarrotPlanner, nav_core::BaseGlobalPlanner)
 
 namespace carrot_planner {
@@ -50,18 +89,18 @@ namespace carrot_planner {
 
   CarrotPlanner::CarrotPlanner(std::string name, costmap_2d::Costmap2DROS* costmap_ros)
   : costmap_ros_(NULL), initialized_(false){
-    initialize(name, costmap_ros);
+    initialize(name, costmap_ros);//在构造函数中调用基类的虚函数，此虚函数在这里被重写
   }
-  
+  //重写基类的虚函数
   void CarrotPlanner::initialize(std::string name, costmap_2d::Costmap2DROS* costmap_ros){
     if(!initialized_){
       costmap_ros_ = costmap_ros;
-      costmap_ = costmap_ros_->getCostmap();
+      costmap_ = costmap_ros_->getCostmap();//costmap_ros_是代价地图的一个接口
 
-      ros::NodeHandle private_nh("~/" + name);
-      private_nh.param("step_size", step_size_, costmap_->getResolution());
-      private_nh.param("min_dist_from_robot", min_dist_from_robot_, 0.10);
-      world_model_ = new base_local_planner::CostmapModel(*costmap_); 
+      ros::NodeHandle private_nh("~/" + name);//设置句柄及话题的名字前缀
+      private_nh.param("step_size", step_size_, costmap_->getResolution());//如果没有设置步进，则采用栅格地图的分配率，也就是一个格子一个格子访问, 这个参数会影响路径规划的时间
+      private_nh.param("min_dist_from_robot", min_dist_from_robot_, 0.10);//获取目标阈值,，小于阈值则认为机器人已经到达目标点
+      world_model_ = new base_local_planner::CostmapModel(*costmap_); //设置世界地图的模型为代价地图模型
 
       initialized_ = true;
     }

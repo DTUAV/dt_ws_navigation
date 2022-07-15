@@ -5,6 +5,7 @@
 #include <utility>
 #include <list>
 #include <vector>
+#include "eigen3/Eigen/Eigen"
 
 
 /*
@@ -13,6 +14,7 @@
  * PointPairContainer 存储两坨一一对应的点云数据
 */
 namespace GMapping{
+
 typedef std::pair<Point,Point> PointPair;//point==>x and y -- 2D
 
 //用来进行ICP优化的中的某一步 这里计算出来的是first 到 second的转换。

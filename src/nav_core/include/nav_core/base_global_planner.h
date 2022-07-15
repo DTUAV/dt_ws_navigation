@@ -43,6 +43,7 @@
 namespace nav_core {
   /**
    * @class BaseGlobalPlanner
+   * 如果要编写全局导航包需要继承这个类
    * @brief Provides an interface for global planners used in navigation. All global planners written as plugins for the navigation stack must adhere to this interface.
    */
   class BaseGlobalPlanner{
@@ -53,6 +54,8 @@ namespace nav_core {
        * @param goal The goal pose 
        * @param plan The plan... filled by the planner
        * @return True if a valid plan was found, false otherwise
+       * 虚函数，由继承的子类实现
+       * 主要是根据起点和目标点生成一条可行路径
        */
       virtual bool makePlan(const geometry_msgs::PoseStamped& start, 
           const geometry_msgs::PoseStamped& goal, std::vector<geometry_msgs::PoseStamped>& plan) = 0;
@@ -64,6 +67,7 @@ namespace nav_core {
        * @param plan The plan... filled by the planner
        * @param cost The plans calculated cost
        * @return True if a valid plan was found, false otherwise
+       * 这个会返回路径的代价
        */
       virtual bool makePlan(const geometry_msgs::PoseStamped& start, 
                             const geometry_msgs::PoseStamped& goal, std::vector<geometry_msgs::PoseStamped>& plan,
