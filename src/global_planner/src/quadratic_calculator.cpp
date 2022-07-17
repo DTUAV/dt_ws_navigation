@@ -33,10 +33,10 @@ namespace global_planner {
 float QuadraticCalculator::calculatePotential(float* potential, unsigned char cost, int n, float prev_potential) {
     // get neighbors
     float u, d, l, r;
-    l = potential[n - 1];
-    r = potential[n + 1];
-    u = potential[n - nx_];
-    d = potential[n + nx_];
+    l = potential[n - 1];//第n栅格对应的左边栅格
+    r = potential[n + 1];//第n栅格对应的右边栅格
+    u = potential[n - nx_];//第n栅格对应的上边栅格
+    d = potential[n + nx_];//第n栅格对应的下边栅格
     //  ROS_INFO("[Update] c: %f  l: %f  r: %f  u: %f  d: %f\n",
     //     potential[n], l, r, u, d);
     //  ROS_INFO("[Update] cost: %d\n", costs[n]);
@@ -61,7 +61,7 @@ float QuadraticCalculator::calculatePotential(float* potential, unsigned char co
     }
 
     // calculate new potential
-    if (dc >= hf)        // if too large, use ta-only update
+    if (dc >= hf)        // if too large, use ta-only update//这种情况是处于障碍物和非障碍物的边界
         return ta + hf;
     else            // two-neighbor interpolation update
     {
@@ -69,7 +69,7 @@ float QuadraticCalculator::calculatePotential(float* potential, unsigned char co
         // might speed this up through table lookup, but still have to
         //   do the divide
         float d = dc / hf;
-        float v = -0.2301 * d * d + 0.5307 * d + 0.7040;
+        float v = -0.2301 * d * d + 0.5307 * d + 0.7040;//这里的插值操作是为了保证势场的连续性
         return ta + hf * v;
     }
 }

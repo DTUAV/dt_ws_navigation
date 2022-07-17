@@ -50,8 +50,8 @@ void calculateMinAndMaxDistances(const std::vector<geometry_msgs::Point>& footpr
 
   for (unsigned int i = 0; i < footprint.size() - 1; ++i)
   {
-    // check the distance from the robot center point to the first vertex
-    double vertex_dist = distance(0.0, 0.0, footprint[i].x, footprint[i].y);
+    // check the distance from the robot center point to the first vertex//检测从机器人原点到第一个机器人轮廓凸包点的距离
+    double vertex_dist = distance(0.0, 0.0, footprint[i].x, footprint[i].y);//计算欧式距离
     double edge_dist = distanceToLine(0.0, 0.0, footprint[i].x, footprint[i].y,
                                       footprint[i + 1].x, footprint[i + 1].y);
     min_dist = std::min(min_dist, std::min(vertex_dist, edge_dist));

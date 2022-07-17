@@ -57,7 +57,7 @@ inline double sign0(double x)
 
 inline double distance(double x0, double y0, double x1, double y1)
 {
-  return hypot(x1 - x0, y1 - y0);
+  return hypot(x1 - x0, y1 - y0); //sqrt(X*X + Y*Y)
 }
 
 double distanceToLine(double pX, double pY, double x0, double y0, double x1, double y1);

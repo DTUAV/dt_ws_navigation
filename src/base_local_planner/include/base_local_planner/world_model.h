@@ -70,6 +70,7 @@ namespace base_local_planner {
         double cos_th = cos(theta);
         double sin_th = sin(theta);
         std::vector<geometry_msgs::Point> oriented_footprint;
+        //footprint The specification of the footprint of the robot in world coordinates == footprint_spec: 机器人底盘四周的位置//由于机器人已经发生旋转，需要计算旋转后这些点的位置
         for(unsigned int i = 0; i < footprint_spec.size(); ++i){
           geometry_msgs::Point new_pt;
           new_pt.x = x + (footprint_spec[i].x * cos_th - footprint_spec[i].y * sin_th);

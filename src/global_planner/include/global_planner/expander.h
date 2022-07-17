@@ -43,62 +43,76 @@
 namespace global_planner {
 
 class Expander {
-    public:
-        Expander(PotentialCalculator* p_calc, int nx, int ny) :
-                unknown_(true), lethal_cost_(253), neutral_cost_(50), factor_(3.0), p_calc_(p_calc) {
-            setSize(nx, ny);
-        }
-        virtual bool calculatePotentials(unsigned char* costs, double start_x, double start_y, double end_x, double end_y,
-                                        int cycles, float* potential) = 0;
+public:
+  Expander(PotentialCalculator* p_calc, int nx, int ny) :
+    unknown_(true), lethal_cost_(253), neutral_cost_(50), factor_(3.0), p_calc_(p_calc) {
+    setSize(nx, ny);
+  }
+//由于这里是不仅考虑最短路径，而且考虑环境的避障，所以，规划器做出的决策要综合两种情况，也就是需要代价和势场。采用势场去描述安全性
+  virtual bool calculatePotentials(unsigned char* costs, double start_x, double start_y, double end_x, double end_y,
+                                   int cycles, float* potential) = 0;
 
-        /**
+  /**
          * @brief  Sets or resets the size of the map
          * @param nx The x size of the map
          * @param ny The y size of the map
          */
-        virtual void setSize(int nx, int ny) {
-            nx_ = nx;
-            ny_ = ny;
-            ns_ = nx * ny;
-        } /**< sets or resets the size of the map */
-        void setLethalCost(unsigned char lethal_cost) {
-            lethal_cost_ = lethal_cost;
-        }
-        void setNeutralCost(unsigned char neutral_cost) {
-            neutral_cost_ = neutral_cost;
-        }
-        void setFactor(float factor) {
-            factor_ = factor;
-        }
-        void setHasUnknown(bool unknown) {
-            unknown_ = unknown;
-        }
+  //设置代价地图的宽度、高度和栅格总数
+  virtual void setSize(int nx, int ny) {
+    nx_ = nx;
+    ny_ = ny;
+    ns_ = nx * ny;
+  } /**< sets or resets the size of the map */
+  //设置致命代价值
+  void setLethalCost(unsigned char lethal_cost) {
+    lethal_cost_ = lethal_cost;
+  }
+  //设置中性代价值
+  void setNeutralCost(unsigned char neutral_cost) {
+    neutral_cost_ = neutral_cost;
+  }
+  //设置代价计算的系数
+  void setFactor(float factor) {
+    factor_ = factor;
+  }
+  //设置是否应允许规划师通过未知空间进行规划
+  void setHasUnknown(bool unknown) {
+    unknown_ = unknown;
+  }
 
-        void clearEndpoint(unsigned char* costs, float* potential, int gx, int gy, int s){
-            int startCell = toIndex(gx, gy);
-            for(int i=-s;i<=s;i++){
-            for(int j=-s;j<=s;j++){
-                int n = startCell+i+nx_*j;
-                if(potential[n]<POT_HIGH)
-                    continue;
-                float c = costs[n]+neutral_cost_;
-                float pot = p_calc_->calculatePotential(potential, c, n);
-                potential[n] = pot;
-            }
-            }
-        }
+  void clearEndpoint(unsigned char* costs, float* potential, int gx, int gy, int s){
 
-    protected:
-        inline int toIndex(int x, int y) {
-            return x + nx_ * y;
-        }
+    int startCell = toIndex(gx, gy);//获取当前gx和gy对应的索引
 
-        int nx_, ny_, ns_; /**< size of grid, in pixels */
-        bool unknown_;
-        unsigned char lethal_cost_, neutral_cost_;
-        int cells_visited_;
-        float factor_;
-        PotentialCalculator* p_calc_;
+    for(int i = -s; i <= s; i++) {
+      for(int j = -s; j <= s; j++) {
+        int n = startCell + i + nx_ * j;
+        if(potential[n] < POT_HIGH) //当前n是未分配
+          continue;
+        float c = costs[n] + neutral_cost_;//计算代价
+        float pot = p_calc_->calculatePotential(potential, c, n);
+        potential[n] = pot;
+      }
+    }
+  }
+
+protected:
+  //根据指定宽度和高度获取索引
+  inline int toIndex(int x, int y) {
+    return x + nx_ * y;
+  }
+
+  /**< size of grid, in pixels */
+  int nx_; //代价地图的宽度x
+  int ny_; //代价地图的高度y
+  int ns_; //代价地图中栅格总数
+
+  bool unknown_; //是否应允许规划师通过未知空间进行规划
+  unsigned char lethal_cost_;//致命的代价，规划的路径要尽可以远离
+  unsigned neutral_cost_;//中性代价，规划的路径要尽可能靠近
+  int cells_visited_;   //已经访问过的栅格数
+  float factor_;        //代价转换的系数
+  PotentialCalculator* p_calc_; //主要计算规划点附近的代价，以便选择最小的方向前进
 
 };
 
