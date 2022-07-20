@@ -54,6 +54,8 @@ namespace base_local_planner {
    * necessary to determine the legality of a footprint at a given
    * position/orientation.
    */
+//实现WorldModel接口的类，用于为轨迹控制器提供自由空间碰撞检查。此类将点存储到网格中，
+//并在必要时执行多边形中的点检查，以确定给定位置/方向上足迹的合法性
   class PointGrid : public WorldModel {
     public:
       /**
@@ -322,5 +324,5 @@ namespace base_local_planner {
       double sq_min_separation_;  ///< @brief The minimum square distance required between points in the grid
       std::vector< std::list<geometry_msgs::Point32>* > points_;  ///< @brief The lists of points returned by a range search, made a member to save on memory allocation
   };
-};
+}
 #endif

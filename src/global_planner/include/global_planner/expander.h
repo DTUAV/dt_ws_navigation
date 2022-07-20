@@ -41,7 +41,7 @@
 #include <global_planner/planner_core.h>
 
 namespace global_planner {
-
+//这是规划器的基类
 class Expander {
 public:
   Expander(PotentialCalculator* p_calc, int nx, int ny) :

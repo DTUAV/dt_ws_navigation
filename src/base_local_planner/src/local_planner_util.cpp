@@ -40,11 +40,8 @@
 #include <base_local_planner/goal_functions.h>
 
 namespace base_local_planner {
-
-void LocalPlannerUtil::initialize(
-    tf2_ros::Buffer* tf,
-    costmap_2d::Costmap2D* costmap,
-    std::string global_frame) {
+//初始化，配置坐标变换、位置的全局坐标系、代价地图
+void LocalPlannerUtil::initialize(tf2_ros::Buffer* tf, costmap_2d::Costmap2D* costmap, std::string global_frame) {
   if(!initialized_) {
     tf_ = tf;
     costmap_ = costmap;
@@ -55,31 +52,33 @@ void LocalPlannerUtil::initialize(
     ROS_WARN("Planner utils have already been initialized, doing nothing.");
   }
 }
-
+//动态配置局部路径规划的约束参数的值
 void LocalPlannerUtil::reconfigureCB(LocalPlannerLimits &config, bool restore_defaults)
 {
+  //是否恢复默认值
   if(setup_ && restore_defaults) {
     config = default_limits_;
   }
-
+  //一开始以默认值进行初始化
   if(!setup_) {
     default_limits_ = config;
     setup_ = true;
   }
+  //给mutex加解锁有多种策略，最简单的是使用scoped_lock类，它使用一个mutex参数来构造，并一直锁定这个mutex直到对象被销毁。如果这个正在被构造的mutex已经被别的线程锁定的话，当前线程就会进入wait状态，直到这个锁被解开。
   boost::mutex::scoped_lock l(limits_configuration_mutex_);
-  limits_ = LocalPlannerLimits(config);
+  limits_ = LocalPlannerLimits(config);//实时获取动态配置参数
 }
 
 costmap_2d::Costmap2D* LocalPlannerUtil::getCostmap() {
-  return costmap_;
+  return costmap_;//返回代价地图
 }
 
 LocalPlannerLimits LocalPlannerUtil::getCurrentLimits() {
   boost::mutex::scoped_lock l(limits_configuration_mutex_);
-  return limits_;
+  return limits_;//返回约束参数的值，这里需要添加线程的互斥锁，因为这个配置参数是可能被实时改变的
 }
 
-
+//从全局规划器规划的路径中获取目标点
 bool LocalPlannerUtil::getGoal(geometry_msgs::PoseStamped& goal_pose) {
   //we assume the global goal is the last point in the global plan
   return base_local_planner::getGoalPose(*tf_,
@@ -88,6 +87,7 @@ bool LocalPlannerUtil::getGoal(geometry_msgs::PoseStamped& goal_pose) {
         goal_pose);
 }
 
+//获取全局规划器规划的全局路径并赋值到本地路径的容器中
 bool LocalPlannerUtil::setPlan(const std::vector<geometry_msgs::PoseStamped>& orig_global_plan) {
   if(!initialized_){
     ROS_ERROR("Planner utils have not been initialized, please call initialize() first");
@@ -101,7 +101,7 @@ bool LocalPlannerUtil::setPlan(const std::vector<geometry_msgs::PoseStamped>& or
 
   return true;
 }
-
+//获取对应当前位置的规划路径
 bool LocalPlannerUtil::getLocalPlan(const geometry_msgs::PoseStamped& global_pose, std::vector<geometry_msgs::PoseStamped>& transformed_plan) {
   //get the global plan in our frame
   if(!base_local_planner::transformGlobalPlan(
@@ -116,6 +116,7 @@ bool LocalPlannerUtil::getLocalPlan(const geometry_msgs::PoseStamped& global_pos
   }
 
   //now we'll prune the plan based on the position of the robot
+  //清除掉落后在当前位置的全局目标点
   if(limits_.prune_plan) {
     base_local_planner::prunePlan(global_pose, transformed_plan, global_plan_);
   }

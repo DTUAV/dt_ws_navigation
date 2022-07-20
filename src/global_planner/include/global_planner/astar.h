@@ -44,6 +44,8 @@
 #include <algorithm>
 
 namespace global_planner {
+
+//索引的类包括当前栅格点索引和代价
 class Index {
     public:
         Index(int a, float b) {
@@ -53,7 +55,7 @@ class Index {
         int i;
         float cost;
 };
-
+//比较器，从大到小排序
 struct greater1 {
         bool operator()(const Index& a, const Index& b) const {
             return a.cost > b.cost;
@@ -62,11 +64,11 @@ struct greater1 {
 
 class AStarExpansion : public Expander {
     public:
-        AStarExpansion(PotentialCalculator* p_calc, int nx, int ny);
+        AStarExpansion(PotentialCalculator* p_calc, int nx, int ny); /*p_calc: 势场的计算类， nx：栅格地图的宽度，ny：栅格地图的高度*/
         bool calculatePotentials(unsigned char* costs, double start_x, double start_y, double end_x, double end_y, int cycles,
-                                float* potential);
+                                float* potential);/*costs：代价地图，start_x: 起始目标点x， start_y: 起始目标点y， end_x: 目标点x，end_y: 目标点y，cycles: 规划循环的次数，potential：势场*/
     private:
-        void add(unsigned char* costs, float* potential, float prev_potential, int next_i, int end_x, int end_y);
+        void add(unsigned char* costs, float* potential, float prev_potential, int next_i, int end_x, int end_y); //s
         std::vector<Index> queue_;
 };
 

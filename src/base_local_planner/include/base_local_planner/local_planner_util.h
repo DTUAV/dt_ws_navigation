@@ -49,7 +49,7 @@
 
 
 namespace base_local_planner {
-
+//局部规划器的使用接口
 /**
  * @class LocalPlannerUtil
  * @brief Helper class implementing infrastructure code many local planner implementations may need.
@@ -58,54 +58,49 @@ class LocalPlannerUtil {
 
 private:
   // things we get from move_base
-  std::string name_;
-  std::string global_frame_;
+  std::string name_; //局部规划器的名字
+  std::string global_frame_;//全局坐标系的名称
 
-  costmap_2d::Costmap2D* costmap_;
-  tf2_ros::Buffer* tf_;
+  costmap_2d::Costmap2D* costmap_;//代价地图
+  tf2_ros::Buffer* tf_; //坐标变换的缓冲区，存有当前系统的所有坐标变换关系
 
+  std::vector<geometry_msgs::PoseStamped> global_plan_;//全局路径规划出来的路径点
 
-  std::vector<geometry_msgs::PoseStamped> global_plan_;
+  boost::mutex limits_configuration_mutex_;//线程互斥锁
 
-
-  boost::mutex limits_configuration_mutex_;
-  bool setup_;
-  LocalPlannerLimits default_limits_;
-  LocalPlannerLimits limits_;
-  bool initialized_;
+  bool setup_;//标志位，是否启动
+  LocalPlannerLimits default_limits_; //默认参数//机器人运动的平移速度、平移加速度、角速度、角加速度、制动速度、制动加速度等参数的集合
+  LocalPlannerLimits limits_;//修改后的参数//机器人运动的平移速度、平移加速度、角速度、角加速度、制动速度、制动加速度等参数的集合
+  bool initialized_;//是否初始化
 
 public:
 
   /**
    * @brief  Callback to update the local planner's parameters
    */
-  void reconfigureCB(LocalPlannerLimits &config, bool restore_defaults);
+  void reconfigureCB(LocalPlannerLimits &config, bool restore_defaults);//动态配置参数的回调函数
 
-  LocalPlannerUtil() : initialized_(false) {}
+  LocalPlannerUtil() : initialized_(false) {}//构造函数
 
-  ~LocalPlannerUtil() {
+  ~LocalPlannerUtil() {  //析构函数
   }
 
   void initialize(tf2_ros::Buffer* tf,
-      costmap_2d::Costmap2D* costmap,
-      std::string global_frame);
+                  costmap_2d::Costmap2D* costmap,
+                  std::string global_frame);//初始化，需要初始化tf缓冲区、代价地图、全局坐标系名称
 
-  bool getGoal(geometry_msgs::PoseStamped& goal_pose);
+  bool getGoal(geometry_msgs::PoseStamped& goal_pose);//获取目标位置
 
-  bool setPlan(const std::vector<geometry_msgs::PoseStamped>& orig_global_plan);
-
+  bool setPlan(const std::vector<geometry_msgs::PoseStamped>& orig_global_plan);//设置全局规划的路径点
+  //获取局部路径规划的点
   bool getLocalPlan(const geometry_msgs::PoseStamped& global_pose, std::vector<geometry_msgs::PoseStamped>& transformed_plan);
-
+  //获取代价地图
   costmap_2d::Costmap2D* getCostmap();
-
+  //获取当前使用的机器人运动参数的约束
   LocalPlannerLimits getCurrentLimits();
-
+  //获取全局坐标系的名称
   std::string getGlobalFrame(){ return global_frame_; }
 };
-
-
-
-
-};
+}
 
 #endif /* ABSTRACT_LOCAL_PLANNER_ODOM_H_ */

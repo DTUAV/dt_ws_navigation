@@ -39,7 +39,7 @@
 
 #include <geometry_msgs/Point32.h>
 #include <sensor_msgs/PointCloud.h>
-
+//这个用于保存平面激光雷达的数据，用于清除空闲的区域，动态避障
 namespace base_local_planner {
   /**
    * @class PlanarLaserScan
@@ -48,10 +48,10 @@ namespace base_local_planner {
   class PlanarLaserScan {
     public:
       PlanarLaserScan() {}
-      geometry_msgs::Point32 origin;
-      sensor_msgs::PointCloud cloud;
+      geometry_msgs::Point32 origin;//起点位置
+      sensor_msgs::PointCloud cloud;//所有激光点的点云数据
       double angle_min, angle_max, angle_increment;
   };
-};
+}
 
 #endif

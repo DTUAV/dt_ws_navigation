@@ -40,7 +40,7 @@
 #include <base_local_planner/world_model.h>
 // For obstacle data access
 #include <costmap_2d/costmap_2d.h>
-
+//代价地图模型,与代价地图交互的接口类型，如果定义其他导航的代价地图，需要构建和此处类似的类
 namespace base_local_planner {
   /**
    * @class CostmapModel
@@ -59,6 +59,7 @@ namespace base_local_planner {
       /**
        * @brief  Destructor for the world model
        */
+      //需要实现基类的析构函数
       virtual ~CostmapModel(){}
       using WorldModel::footprintCost;
 
@@ -73,6 +74,7 @@ namespace base_local_planner {
        *            -2 if footprint covers at least a no-information cell, or
        *            -3 if footprint is [partially] outside of the map
        */
+      //继承基类的虚构函数
       virtual double footprintCost(const geometry_msgs::Point& position, const std::vector<geometry_msgs::Point>& footprint,
           double inscribed_radius, double circumscribed_radius);
 
@@ -84,6 +86,7 @@ namespace base_local_planner {
        * @param y1 The y position of the second cell in grid coordinates
        * @return A positive cost for a legal line... negative otherwise
        */
+      //在代价地图中获取某段路径的代价
       double lineCost(int x0, int x1, int y0, int y1) const;
 
       /**
@@ -92,11 +95,13 @@ namespace base_local_planner {
        * @param y The y position of the point in cell coordinates
        * @return A positive cost for a legal point... negative otherwise
        */
+      //在代价地图中获取某点的代价
       double pointCost(int x, int y) const;
 
     private:
-      const costmap_2d::Costmap2D& costmap_; ///< @brief Allows access of costmap obstacle information
+      //此处不予许修改代价地图
+      const costmap_2d::Costmap2D& costmap_;  ///< @brief Allows access of costmap obstacle information
 
   };
-};
+}
 #endif

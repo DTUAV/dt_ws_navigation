@@ -38,7 +38,7 @@
 #include <base_local_planner/map_grid_cost_function.h>
 
 namespace base_local_planner {
-
+//类构造函数初始化
 MapGridCostFunction::MapGridCostFunction(costmap_2d::Costmap2D* costmap,
     double xshift,
     double yshift,
@@ -51,13 +51,13 @@ MapGridCostFunction::MapGridCostFunction(costmap_2d::Costmap2D* costmap,
     yshift_(yshift),
     is_local_goal_function_(is_local_goal_function),
     stop_on_failure_(true) {}
-
+//设置规划路径的目标点
 void MapGridCostFunction::setTargetPoses(std::vector<geometry_msgs::PoseStamped> target_poses) {
   target_poses_ = target_poses;
 }
 
 bool MapGridCostFunction::prepare() {
-  map_.resetPathDist();
+  map_.resetPathDist();//将距离数据的栅格地图的元素数据复位
 
   if (is_local_goal_function_) {
     map_.setLocalGoal(*costmap_, target_poses_);
@@ -66,12 +66,12 @@ bool MapGridCostFunction::prepare() {
   }
   return true;
 }
-
+//获取栅格的代价
 double MapGridCostFunction::getCellCosts(unsigned int px, unsigned int py) {
   double grid_dist = map_(px, py).target_dist;
   return grid_dist;
 }
-
+//计算轨迹的得分
 double MapGridCostFunction::scoreTrajectory(Trajectory &traj) {
   double cost = 0.0;
   if (aggregationType_ == Product) {
@@ -94,7 +94,7 @@ double MapGridCostFunction::scoreTrajectory(Trajectory &traj) {
       px = px + yshift_ * cos(pth + M_PI_2);
       py = py + yshift_ * sin(pth + M_PI_2);
     }
-
+    //检查轨迹是否超出地图范围
     //we won't allow trajectories that go off the map... shouldn't happen that often anyways
     if ( ! costmap_->worldToMap(px, py, cell_x, cell_y)) {
       //we're off the map
@@ -110,7 +110,7 @@ double MapGridCostFunction::scoreTrajectory(Trajectory &traj) {
         return -2.0;
       }
     }
-
+//根据配置的代价计算类型计算代价
     switch( aggregationType_ ) {
     case Last:
       cost = grid_dist;

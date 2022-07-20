@@ -37,31 +37,31 @@
 #define __base_local_planner__LOCALPLANNERLIMITS_H__
 
 #include <Eigen/Core>
-
+//局部规划的约束参数定义
 namespace base_local_planner
 {
 class LocalPlannerLimits
 {
 public:
 
-  double max_vel_trans;
-  double min_vel_trans;
-  double max_vel_x;
-  double min_vel_x;
-  double max_vel_y;
-  double min_vel_y;
-  double max_vel_theta;
-  double min_vel_theta;
-  double acc_lim_x;
-  double acc_lim_y;
-  double acc_lim_theta;
-  double acc_lim_trans;
-  bool   prune_plan;
-  double xy_goal_tolerance;
-  double yaw_goal_tolerance;
-  double trans_stopped_vel;
-  double theta_stopped_vel;
-  bool   restore_defaults;
+  double max_vel_trans; //最大的平移速度
+  double min_vel_trans; //最小的平移速度
+  double max_vel_x;    //最大的x轴方向速度
+  double min_vel_x;   //最小的x轴方向速度
+  double max_vel_y;   //最大的y轴方向速度
+  double min_vel_y;  //最小的y轴方向速度
+  double max_vel_theta;//最大的角速度
+  double min_vel_theta;//最小的角速度
+  double acc_lim_x;    //x方向的加速度约束
+  double acc_lim_y;    //y方向的加速度约束
+  double acc_lim_theta;//角加速度的约束
+  double acc_lim_trans;  //平移加速度的约束
+  bool   prune_plan;     //是否清除落后机器人当前位置的全局目标点
+  double xy_goal_tolerance;//到达目标点xy的容忍度，也就是在多大偏差内可以认为机器人达到目标点
+  double yaw_goal_tolerance;//到达目标航向的容忍度，也就是在多大偏差内可以认为机器人达到目标航向
+  double trans_stopped_vel;//制动的平移速度
+  double theta_stopped_vel;//制动的角速度
+  bool   restore_defaults;//是否恢复到默认参数
 
   LocalPlannerLimits() {}
 
@@ -107,6 +107,7 @@ public:
    * @brief  Get the acceleration limits of the robot
    * @return  The acceleration limits of the robot
    */
+  //获取加速度限制
   Eigen::Vector3f getAccLimits() {
     Eigen::Vector3f acc_limits;
     acc_limits[0] = acc_lim_x;

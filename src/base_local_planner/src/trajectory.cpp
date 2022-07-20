@@ -77,4 +77,4 @@ namespace base_local_planner {
   unsigned int Trajectory::getPointsSize() const {
     return x_pts_.size();
   }
-};
+}

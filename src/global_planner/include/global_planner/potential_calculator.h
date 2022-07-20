@@ -41,22 +41,23 @@
 #include <algorithm>
 
 namespace global_planner {
-
+//这个类是计算势场
 class PotentialCalculator {
     public:
         PotentialCalculator(int nx, int ny) {
             setSize(nx, ny);
         }
 
-        virtual float calculatePotential(float* potential, unsigned char cost, int n, float prev_potential=-1){
-            if(prev_potential < 0){
+        virtual float calculatePotential(float* potential, unsigned char cost, int n, float prev_potential=-1){//这里使用默认形参初值，在Dijkstra算法中使用是默认形参初值，而A*算法中应用的是无默认形参初值
+          //获取周围四个栅格的最小势场值
+          if(prev_potential < 0){
                 // get min of neighbors
                 float min_h = std::min( potential[n - 1], potential[n + 1] ),
                       min_v = std::min( potential[n - nx_], potential[n + nx_]);
                 prev_potential = std::min(min_h, min_v);
             }
 
-            return prev_potential + cost;
+            return prev_potential + cost;//周围的最小势场加上当前的代价
         }
 
         /**
@@ -64,6 +65,7 @@ class PotentialCalculator {
          * @param nx The x size of the map
          * @param ny The y size of the map
          */
+        //设置代价地图的宽度x，高度y和总的栅格数
         virtual void setSize(int nx, int ny) {
             nx_ = nx;
             ny_ = ny;
@@ -71,11 +73,14 @@ class PotentialCalculator {
         } /**< sets or resets the size of the map */
 
     protected:
+        //根据宽度和高度获取地图的索引
         inline int toIndex(int x, int y) {
             return x + nx_ * y;
         }
-
-        int nx_, ny_, ns_; /**< size of grid, in pixels */
+        /**< size of grid, in pixels */
+        int nx_;//地图的宽度x
+        int ny_;//地图的高度y
+        int ns_;//地图的栅格总数
 };
 
 } //end namespace global_planner

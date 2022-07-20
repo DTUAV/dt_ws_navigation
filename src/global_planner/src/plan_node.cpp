@@ -36,12 +36,12 @@
  *         David V. Lu!!
  *********************************************************************/
 #include <global_planner/planner_core.h>
-#include <navfn/MakeNavPlan.h>
+#include <navfn/MakeNavPlan.h>     //!!!!!!!!!!!!这里用到navfn包的一个头文件这个是定义请求路径的服务
 #include <boost/shared_ptr.hpp>
 #include <costmap_2d/costmap_2d_ros.h>
 #include <tf2_ros/transform_listener.h>
 
-namespace cm = costmap_2d;
+namespace cm = costmap_2d; //命名空间重命名
 namespace rm = geometry_msgs;
 
 using std::vector;
@@ -51,25 +51,26 @@ using cm::Costmap2D;
 using cm::Costmap2DROS;
 
 namespace global_planner {
-
+//这个类在全局规划器的基础上再次封装，主要是添加路径规划请求服务和订阅目标点的订阅器
 class PlannerWithCostmap : public GlobalPlanner {
     public:
         PlannerWithCostmap(string name, Costmap2DROS* cmap);
-        bool makePlanService(navfn::MakeNavPlan::Request& req, navfn::MakeNavPlan::Response& resp);
+        bool makePlanService(navfn::MakeNavPlan::Request& req, navfn::MakeNavPlan::Response& resp);//路径规划请求的回调函数
 
     private:
-        void poseCallback(const rm::PoseStamped::ConstPtr& goal);
-        Costmap2DROS* cmap_;
-        ros::ServiceServer make_plan_service_;
-        ros::Subscriber pose_sub_;
+        void poseCallback(const rm::PoseStamped::ConstPtr& goal);//目标点的回调函数
+        Costmap2DROS* cmap_;//代价地图
+        ros::ServiceServer make_plan_service_;//路径规划请求的服务
+        ros::Subscriber pose_sub_; //订阅目标点的订阅器
 };
 
+//请求规划路径的服务回调
 bool PlannerWithCostmap::makePlanService(navfn::MakeNavPlan::Request& req, navfn::MakeNavPlan::Response& resp) {
     vector<PoseStamped> path;
 
-    req.start.header.frame_id = "map";
+    req.start.header.frame_id = "map";//起点和目标点都是以地图map为坐标系
     req.goal.header.frame_id = "map";
-    bool success = makePlan(req.start, req.goal, path);
+    bool success = makePlan(req.start, req.goal, path);//进行规划路径
     resp.plan_found = success;
     if (success) {
         resp.path = path;
@@ -82,7 +83,7 @@ void PlannerWithCostmap::poseCallback(const rm::PoseStamped::ConstPtr& goal) {
     geometry_msgs::PoseStamped global_pose;
     cmap_->getRobotPose(global_pose);
     vector<PoseStamped> path;
-    makePlan(global_pose, *goal, path);
+    makePlan(global_pose, *goal, path);//订阅目标点进行路径规划
 }
 
 PlannerWithCostmap::PlannerWithCostmap(string name, Costmap2DROS* cmap) :

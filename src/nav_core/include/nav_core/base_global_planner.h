@@ -92,6 +92,6 @@ namespace nav_core {
     protected:
       BaseGlobalPlanner(){}
   };
-};  // namespace nav_core
+}  // namespace nav_core
 
 #endif  // NAV_CORE_BASE_GLOBAL_PLANNER_H

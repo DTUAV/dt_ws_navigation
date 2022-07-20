@@ -41,7 +41,7 @@
 #include <base_local_planner/trajectory_cost_function.h>
 
 namespace base_local_planner {
-
+//首选正向成本函数
 class PreferForwardCostFunction: public base_local_planner::TrajectoryCostFunction {
 public:
 
@@ -50,7 +50,7 @@ public:
 
   double scoreTrajectory(Trajectory &traj);
 
-  bool prepare() {return true;};
+  bool prepare() {return true;}
 
   void setPenalty(double penalty) {
     penalty_ = penalty;

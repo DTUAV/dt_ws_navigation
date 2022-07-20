@@ -42,6 +42,7 @@
 
 namespace global_planner {
 
+//将角度转换为四元数
 void set_angle(geometry_msgs::PoseStamped* pose, double angle)
 {
   tf2::Quaternion q;
@@ -49,8 +50,7 @@ void set_angle(geometry_msgs::PoseStamped* pose, double angle)
   tf2::convert(q, pose->pose.orientation);
 }
 
-void OrientationFilter::processPath(const geometry_msgs::PoseStamped& start, 
-                                    std::vector<geometry_msgs::PoseStamped>& path)
+void OrientationFilter::processPath(const geometry_msgs::PoseStamped& start, std::vector<geometry_msgs::PoseStamped>& path)
 {
     int n = path.size();
     if (n == 0) return;
@@ -103,9 +103,10 @@ void OrientationFilter::processPath(const geometry_msgs::PoseStamped& start,
             break;           
     }
 }
-    
+//根据前后的差设置对象运动的角度
 void OrientationFilter::setAngleBasedOnPositionDerivative(std::vector<geometry_msgs::PoseStamped>& path, int index)
 {
+  //最大最小值，最小最大值,保证不超出地图
   int index0 = std::max(0, index - window_size_);
   int index1 = std::min((int)path.size() - 1, index + window_size_);
 
@@ -114,12 +115,12 @@ void OrientationFilter::setAngleBasedOnPositionDerivative(std::vector<geometry_m
          x1 = path[index1].pose.position.x,
          y1 = path[index1].pose.position.y;
          
-  double angle = atan2(y1-y0,x1-x0);
-  set_angle(&path[index], angle);
+  double angle = atan2(y1-y0,x1-x0); //前后位置差计算角度
+  set_angle(&path[index], angle); //将角度转换为四元数并保存到路径点中
 }
 
-void OrientationFilter::interpolate(std::vector<geometry_msgs::PoseStamped>& path, 
-                                    int start_index, int end_index)
+//对角度进行插值，保证平滑
+void OrientationFilter::interpolate(std::vector<geometry_msgs::PoseStamped>& path, int start_index, int end_index)
 {
     const double start_yaw = tf2::getYaw(path[start_index].pose.orientation),
                  end_yaw   = tf2::getYaw(path[end_index  ].pose.orientation);

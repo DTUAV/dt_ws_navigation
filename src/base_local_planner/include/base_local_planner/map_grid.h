@@ -49,11 +49,13 @@ namespace base_local_planner{
    * @class MapGrid
    * @brief A grid of MapCell cells that is used to propagate path and goal distances for the trajectory controller.
    */
+//用于为轨迹控制器传播路径和目标距离的MapCell单元网格
   class MapGrid{
     public:
       /**
        * @brief  Creates a 0x0 map by default
        */
+    //构造函数，空地图
       MapGrid();
 
       /**
@@ -61,6 +63,7 @@ namespace base_local_planner{
        * @param size_x The width of the map 
        * @param size_y The height of the map 
        */
+      //构造函数，size_x * size_y的地图
       MapGrid(unsigned int size_x, unsigned int size_y);
 
 
@@ -70,6 +73,7 @@ namespace base_local_planner{
        * @param y The y coordinate of the cell 
        * @return A reference to the desired cell
        */
+      //获取x，y对应的栅格值
       inline MapCell& operator() (unsigned int x, unsigned int y){
         return map_[size_x_ * y + x];
       }
@@ -108,6 +112,7 @@ namespace base_local_planner{
       /**
        * @brief reset path distance fields for all cells
        */
+      //重置地图中栅格的值
       void resetPathDist();
 
       /**
@@ -183,18 +188,20 @@ namespace base_local_planner{
       /**
        * @brief Update what cell is considered the next local goal
        */
-      void setLocalGoal(const costmap_2d::Costmap2D& costmap,
-            const std::vector<geometry_msgs::PoseStamped>& global_plan);
+      void setLocalGoal(const costmap_2d::Costmap2D& costmap, const std::vector<geometry_msgs::PoseStamped>& global_plan);
 
-      double goal_x_, goal_y_; /**< @brief The goal distance was last computed from */
-
-      unsigned int size_x_, size_y_; ///< @brief The dimensions of the grid
+      /**< @brief The goal distance was last computed from */
+      double goal_x_; //目标位置x
+      double goal_y_; //目标位置y
+      /////< @brief The dimensions of the grid
+      unsigned int size_x_;//地图的宽度
+      unsigned size_y_;//地图的高度
 
     private:
-
+      //栅格值为距离信息的栅格地图
       std::vector<MapCell> map_; ///< @brief Storage for the MapCells
 
   };
-};
+}
 
 #endif

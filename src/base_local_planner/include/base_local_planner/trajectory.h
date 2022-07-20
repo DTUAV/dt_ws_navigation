@@ -36,6 +36,7 @@
 
 #include <vector>
 
+//这个类用于描述一条轨迹
 namespace base_local_planner {
   /**
    * @class Trajectory
@@ -55,13 +56,9 @@ namespace base_local_planner {
        * @param thetav The theta velocity used to seed the trajectory
        * @param num_pts The expected number of points for a trajectory
        */
+      //通过指定的速度、时间增量和路径点数目生成一条轨迹
       Trajectory(double xv, double yv, double thetav, double time_delta, unsigned int num_pts);
 
-      double xv_, yv_, thetav_; ///< @brief The x, y, and theta velocities of the trajectory
-
-      double cost_; ///< @brief The cost/score of the trajectory
-
-      double time_delta_; ///< @brief The time gap between points
 
       /**
        * @brief  Get a point within the trajectory
@@ -70,6 +67,7 @@ namespace base_local_planner {
        * @param y Will be set to the y position of the point
        * @param th Will be set to the theta position of the point
        */
+      //获取轨迹中某个索引的点（x,y,theta）
       void getPoint(unsigned int index, double& x, double& y, double& th) const;
 
       /**
@@ -79,6 +77,7 @@ namespace base_local_planner {
        * @param y The y position
        * @param th The theta position
        */
+      //设置轨迹中某个索引的点（x,y,theta）
       void setPoint(unsigned int index, double x, double y, double th);
 
       /**
@@ -87,6 +86,7 @@ namespace base_local_planner {
        * @param y The y position
        * @param th The theta position
        */
+      //在轨迹末尾添加一个点
       void addPoint(double x, double y, double th);
 
       /**
@@ -95,18 +95,28 @@ namespace base_local_planner {
        * @param y Will be set to the y position of the point
        * @param th Will be set to the theta position of the point
        */
+      //获取轨迹末端点
       void getEndpoint(double& x, double& y, double& th) const;
 
       /**
        * @brief  Clear the trajectory's points
        */
+      //清除这条轨迹的数据
       void resetPoints();
 
       /**
        * @brief  Return the number of points in the trajectory
        * @return The number of points in the trajectory
        */
+      //获取这条轨迹点的数量
       unsigned int getPointsSize() const;
+
+
+      double xv_, yv_, thetav_; ///< @brief The x, y, and theta velocities of the trajectory
+      //这条轨迹的代价
+      double cost_; ///< @brief The cost/score of the trajectory
+
+      double time_delta_; ///< @brief The time gap between points
 
     private:
       std::vector<double> x_pts_; ///< @brief The x points in the trajectory
@@ -114,5 +124,5 @@ namespace base_local_planner {
       std::vector<double> th_pts_; ///< @brief The theta points in the trajectory
 
   };
-};
+}
 #endif

@@ -42,8 +42,9 @@ using namespace std;
 using namespace costmap_2d;
 
 namespace base_local_planner {
-  CostmapModel::CostmapModel(const Costmap2D& ma) : costmap_(ma) {}
+  CostmapModel::CostmapModel(const Costmap2D& ma) : costmap_(ma) {} //类的构造函数，在初始化时就要赋值代价地图数据
 
+  //核心函数，计算当前路径点是否合理
   double CostmapModel::footprintCost(const geometry_msgs::Point& position, const std::vector<geometry_msgs::Point>& footprint,
       double inscribed_radius, double circumscribed_radius){
     // returns:
@@ -54,26 +55,28 @@ namespace base_local_planner {
 
     //used to put things into grid coordinates
     unsigned int cell_x, cell_y;
-
+    //传入的是map坐标系的点，此处要转换为栅格地图的点
     //get the cell coord of the center point of the robot
-    if(!costmap_.worldToMap(position.x, position.y, cell_x, cell_y))
+    if(!costmap_.worldToMap(position.x, position.y, cell_x, cell_y))//如果没有获取到当前世界坐标系下对应的栅格地图坐标，返回-3，认为机器人已经位移地图边界外面
       return -3.0;
 
+    //如果底盘的数据点少于三个，默认机器人的模型是圆形底盘
     //if number of points in the footprint is less than 3, we'll just assume a circular robot
     if(footprint.size() < 3){
       unsigned char cost = costmap_.getCost(cell_x, cell_y);
-      if(cost == NO_INFORMATION)
+      if(cost == NO_INFORMATION)//该点没有信息
         return -2.0;
-      if(cost == LETHAL_OBSTACLE || cost == INSCRIBED_INFLATED_OBSTACLE)
+      if(cost == LETHAL_OBSTACLE || cost == INSCRIBED_INFLATED_OBSTACLE)//该点有障碍物
         return -1.0;
       return cost;
     }
-
+    //将机器人的底盘放到栅格地图中检查
     //now we really have to lay down the footprint in the costmap grid
     unsigned int x0, x1, y0, y1;
     double line_cost = 0.0;
     double footprint_cost = 0.0;
 
+    //检查底盘相邻点在栅格地图中是否合理
     //we need to rasterize each line in the footprint
     for(unsigned int i = 0; i < footprint.size() - 1; ++i){
       //get the cell coord of the first point
@@ -91,7 +94,7 @@ namespace base_local_planner {
       if(line_cost < 0)
         return line_cost;
     }
-
+    //检查底盘起点到终点是否合理
     //we also need to connect the first point in the footprint to the last point
     //get the cell coord of the last point
     if(!costmap_.worldToMap(footprint.back().x, footprint.back().y, x0, y0))
@@ -116,7 +119,7 @@ namespace base_local_planner {
   double CostmapModel::lineCost(int x0, int x1, int y0, int y1) const {
     double line_cost = 0.0;
     double point_cost = -1.0;
-
+    //这里LineIterator采用bresenham算法
     for( LineIterator line( x0, y0, x1, y1 ); line.isValid(); line.advance() )
     {
       point_cost = pointCost( line.getX(), line.getY() ); //Score the current point
@@ -142,4 +145,4 @@ namespace base_local_planner {
     return cost;
   }
 
-};
+}

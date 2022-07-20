@@ -98,6 +98,7 @@ void OscillationCostFunction::resetOscillationFlags() {
   forward_neg_ = false;
 }
 
+//根据当前的速度设置运行振荡的标志
 bool OscillationCostFunction::setOscillationFlags(base_local_planner::Trajectory* t, double min_vel_trans) {
   bool flag_set = false;
   //set oscillation flags for moving forward and backward
@@ -170,7 +171,7 @@ double OscillationCostFunction::scoreTrajectory(Trajectory &traj) {
       (strafe_neg_only_  && traj.yv_ > 0.0) ||
       (rot_pos_only_     && traj.thetav_ < 0.0) ||
       (rot_neg_only_     && traj.thetav_ > 0.0)) {
-    return -5.0;
+    return -5.0;//固定的代价
   }
   return 0.0;
 }

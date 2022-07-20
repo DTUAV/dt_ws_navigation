@@ -47,7 +47,7 @@
 namespace base_local_planner {
 
   double getGoalPositionDistance(const geometry_msgs::PoseStamped& global_pose, double goal_x, double goal_y) {
-    return hypot(goal_x - global_pose.pose.position.x, goal_y - global_pose.pose.position.y);
+    return hypot(goal_x - global_pose.pose.position.x, goal_y - global_pose.pose.position.y);//欧式距离
   }
 
   double getGoalOrientationAngleDifference(const geometry_msgs::PoseStamped& global_pose, double goal_th) {
@@ -84,10 +84,11 @@ namespace base_local_planner {
       double x_diff = global_pose.pose.position.x - w.pose.position.x;
       double y_diff = global_pose.pose.position.y - w.pose.position.y;
       double distance_sq = x_diff * x_diff + y_diff * y_diff;
-      if(distance_sq < 1){
+      if(distance_sq < 1){//这里检查距离为1认为是最近的路径点
         ROS_DEBUG("Nearest waypoint to <%f, %f> is <%f, %f>\n", global_pose.pose.position.x, global_pose.pose.position.y, w.pose.position.x, w.pose.position.y);
         break;
       }
+      //其他情况，清除已经完成的路径点
       it = plan.erase(it);
       global_it = global_plan.erase(global_it);
     }
@@ -170,7 +171,7 @@ namespace base_local_planner {
 
     return true;
   }
-
+  //获取当前的目标点
   bool getGoalPose(const tf2_ros::Buffer& tf,
       const std::vector<geometry_msgs::PoseStamped>& global_plan,
       const std::string& global_frame, geometry_msgs::PoseStamped &goal_pose) {
@@ -180,7 +181,8 @@ namespace base_local_planner {
       return false;
     }
 
-    const geometry_msgs::PoseStamped& plan_goal_pose = global_plan.back();
+    const geometry_msgs::PoseStamped& plan_goal_pose = global_plan.back(); //最后一个路径点为目标点
+    //
     try{
       geometry_msgs::TransformStamped transform = tf.lookupTransform(global_frame, ros::Time(),
                          plan_goal_pose.header.frame_id, plan_goal_pose.header.stamp,
@@ -223,11 +225,11 @@ namespace base_local_planner {
     double goal_y = goal_pose.pose.position.y;
     double goal_th = tf2::getYaw(goal_pose.pose.orientation);
 
-    //check to see if we've reached the goal position
+    //check to see if we've reached the goal position//位置是否已经达到
     if(getGoalPositionDistance(global_pose, goal_x, goal_y) <= xy_goal_tolerance) {
-      //check to see if the goal orientation has been reached
+      //check to see if the goal orientation has been reached//角度是否已经达到
       if(fabs(getGoalOrientationAngleDifference(global_pose, goal_th)) <= yaw_goal_tolerance) {
-        //make sure that we're actually stopped before returning success
+        //make sure that we're actually stopped before returning success//机器人是否已经停止
         if(stopped(base_odom, rot_stopped_vel, trans_stopped_vel))
           return true;
       }
@@ -236,10 +238,11 @@ namespace base_local_planner {
     return false;
   }
 
-  bool stopped(const nav_msgs::Odometry& base_odom, 
-      const double& rot_stopped_velocity, const double& trans_stopped_velocity){
-    return fabs(base_odom.twist.twist.angular.z) <= rot_stopped_velocity 
+  //线速度和角速度都小于设置的判断，认为机器人已经停止了
+  bool stopped(const nav_msgs::Odometry& base_odom, const double& rot_stopped_velocity, const double& trans_stopped_velocity){
+
+    return fabs(base_odom.twist.twist.angular.z) <= rot_stopped_velocity
       && fabs(base_odom.twist.twist.linear.x) <= trans_stopped_velocity
       && fabs(base_odom.twist.twist.linear.y) <= trans_stopped_velocity;
   }
-};
+}

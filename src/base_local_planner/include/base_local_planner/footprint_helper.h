@@ -47,6 +47,7 @@
 
 namespace base_local_planner {
 
+//这个类用于获取机器人底盘在栅格地图的所有栅格点
 class FootprintHelper {
 public:
   FootprintHelper();
@@ -60,11 +61,10 @@ public:
    * @param  fill If true: returns all cells in the footprint of the robot. If false: returns only the cells that make up the outline of the footprint.
    * @return The cells that make up either the outline or entire footprint of the robot depending on fill
    */
-  std::vector<base_local_planner::Position2DInt> getFootprintCells(
-      Eigen::Vector3f pos,
-      std::vector<geometry_msgs::Point> footprint_spec,
-      const costmap_2d::Costmap2D&,
-      bool fill);
+  //pos = [x_i, y_i, theta_i]机器人当前位姿
+  //footprint_spec: 底盘的点位置
+  //fill: If true: returns all cells in the footprint of the robot. If false: returns only the cells that make up the outline of the footprint
+  std::vector<base_local_planner::Position2DInt> getFootprintCells(Eigen::Vector3f pos, std::vector<geometry_msgs::Point> footprint_spec, const costmap_2d::Costmap2D&, bool fill);
 
   /**
    * @brief  Use Bresenham's algorithm to trace a line between two points in a grid
@@ -74,12 +74,14 @@ public:
    * @param  y1 The y coordinate of the second point
    * @param  pts Will be filled with the cells that lie on the line in the grid
    */
+  //使用bresenham算法去获取两点之间的所有栅格
   void getLineCells(int x0, int x1, int y0, int y1, std::vector<base_local_planner::Position2DInt>& pts);
 
   /**
    * @brief Fill the outline of a polygon, in this case the robot footprint, in a grid
    * @param footprint The list of cells making up the footprint in the grid, will be modified to include all cells inside the footprint
    */
+  //获取机器人底盘覆盖的所有栅格
   void getFillCells(std::vector<base_local_planner::Position2DInt>& footprint);
 };
 

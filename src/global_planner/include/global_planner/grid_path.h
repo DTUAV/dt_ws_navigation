@@ -39,9 +39,9 @@
 #define _GRID_PATH_H
 #include<vector>
 #include<global_planner/traceback.h>
-
+//这个类用于获取栅格地图中的路径
 namespace global_planner {
-
+//继承Traceback基类，主要实现getPath这个虚函数
 class GridPath : public Traceback {
     public:
         GridPath(PotentialCalculator* p_calc): Traceback(p_calc){}

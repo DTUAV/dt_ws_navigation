@@ -49,6 +49,7 @@ namespace base_local_planner {
    * @brief An interface the trajectory controller uses to interact with the
    * world regardless of the underlying world model.
    */
+//与环境地图的交互接口, 主要用于检查所规划的路径点是否合理
   class WorldModel{
     public:
       /**
@@ -62,6 +63,7 @@ namespace base_local_planner {
        *          -2 if footprint covers at least a no-information cell, or
        *          -3 if footprint is partially or totally outside of the map
        */
+    //检查机器人在这一点是否安全\合理 返回值正数是可行的，负数是不可行，-1表示机器人至少有一个障碍物的栅格点，-2表示机器人至少一个没有信心的栅格点，-3表示机器人部分或者全部在地图外面
       virtual double footprintCost(const geometry_msgs::Point& position, const std::vector<geometry_msgs::Point>& footprint,
           double inscribed_radius, double circumscribed_radius) = 0;
 
@@ -111,5 +113,5 @@ namespace base_local_planner {
       WorldModel(){}
   };
 
-};
+}
 #endif

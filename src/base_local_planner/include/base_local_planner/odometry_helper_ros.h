@@ -44,7 +44,7 @@
 #include <geometry_msgs/PoseStamped.h>
 
 namespace base_local_planner {
-
+//机器人里程计数据的接口, 负责订阅里程计的话题数据并提出给其他类访问的接口
 class OdometryHelperRos {
 public:
 
@@ -59,10 +59,13 @@ public:
    * @brief  Callback for receiving odometry data
    * @param msg An Odometry message
    */
+  //里程计数据订阅的回调函数
   void odomCallback(const nav_msgs::Odometry::ConstPtr& msg);
 
+  //对外接口，获取当前的里程计数据
   void getOdom(nav_msgs::Odometry& base_odom);
 
+  //对外的接口，提供不同接口的里程计数据
   void getRobotVel(geometry_msgs::PoseStamped& robot_vel);
 
   /** @brief Set the odometry topic.  This overrides what was set in the constructor, if anything.
@@ -77,14 +80,15 @@ public:
 
 private:
   //odom topic
-  std::string odom_topic_;
+  std::string odom_topic_;//里程计的话题
 
   // we listen on odometry on the odom topic
-  ros::Subscriber odom_sub_;
-  nav_msgs::Odometry base_odom_;
-  boost::mutex odom_mutex_;
+  ros::Subscriber odom_sub_;//里程计数据的订阅器
+  nav_msgs::Odometry base_odom_;//主要是这个数据，里程计的信息保存在这里
+  boost::mutex odom_mutex_;//线程互斥锁
   // global tf frame id
-  std::string frame_id_; ///< The frame_id associated this data
+  ///< The frame_id associated this data
+  std::string frame_id_;//里程计的坐标系名称
 };
 
 } /* namespace base_local_planner */

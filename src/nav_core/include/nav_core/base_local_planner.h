@@ -42,6 +42,7 @@
 #include <costmap_2d/costmap_2d_ros.h>
 #include <tf2_ros/buffer.h>
 
+//局部路径规划的基类，局部路径规划器需要基础这个类
 namespace nav_core {
   /**
    * @class BaseLocalPlanner
@@ -53,13 +54,16 @@ namespace nav_core {
        * @brief  Given the current position, orientation, and velocity of the robot, compute velocity commands to send to the base
        * @param cmd_vel Will be filled with the velocity command to be passed to the robot base
        * @return True if a valid velocity command was found, false otherwise
+       *
        */
+    //给定当前的位置、方向和速度，计算机器人的目标速度局部路径规划器直接给出机器人的控制指令
       virtual bool computeVelocityCommands(geometry_msgs::Twist& cmd_vel) = 0;
 
       /**
        * @brief  Check if the goal pose has been achieved by the local planner
        * @return True if achieved, false otherwise
        */
+    //判断机器人是否到达目标点
       virtual bool isGoalReached() = 0;
 
       /**
@@ -67,6 +71,7 @@ namespace nav_core {
        * @param plan The plan to pass to the local planner
        * @return True if the plan was updated successfully, false otherwise
        */
+    //将全局规划的路径设置给局部路径规划器
       virtual bool setPlan(const std::vector<geometry_msgs::PoseStamped>& plan) = 0;
 
       /**
@@ -75,16 +80,18 @@ namespace nav_core {
        * @param tf A pointer to a transform listener
        * @param costmap_ros The cost map to use for assigning costs to local plans
        */
+    //初始化局部路径规划器
       virtual void initialize(std::string name, tf2_ros::Buffer* tf, costmap_2d::Costmap2DROS* costmap_ros) = 0;
 
       /**
        * @brief  Virtual destructor for the interface
        */
+    //析构函数
       virtual ~BaseLocalPlanner(){}
 
     protected:
       BaseLocalPlanner(){}
   };
-};  // namespace nav_core
+}  // namespace nav_core
 
 #endif  // NAV_CORE_BASE_LOCAL_PLANNER_H

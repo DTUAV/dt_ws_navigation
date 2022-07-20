@@ -73,7 +73,7 @@ class DijkstraExpansion : public Expander {
             neutral_cost_ = neutral_cost;
             priorityIncrement_ = 2 * neutral_cost_;
         }
-        //设置精度，到达目标点的精度
+        //是否设置精确
         void setPreciseStart(bool precise){ precise_ = precise; }
     private:
 
@@ -110,9 +110,9 @@ class DijkstraExpansion : public Expander {
         bool precise_;//是否需要精确
 
         /** block priority thresholds */
-        float threshold_; /**< current threshold */
+        float threshold_; /**< current threshold *///进入下一个缓冲区的阈值，在算法运行过程中这个阈值会被调整
 
-        float priorityIncrement_; /**< priority threshold increment */
+        float priorityIncrement_; /**< priority threshold increment *///上面阈值调整的增量
 
 };
 } //end namespace global_planner

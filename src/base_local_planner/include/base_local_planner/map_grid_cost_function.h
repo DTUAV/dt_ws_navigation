@@ -50,8 +50,10 @@ namespace base_local_planner {
  *return the value of the last point (if no of the earlier points were in
  * return collision), the sum for all points, or the product of all (non-zero) points
  */
-enum CostAggregationType { Last, Sum, Product};
+enum CostAggregationType { Last, Sum, Product};//汇总代价的类型: 最后的， 和， 乘
 
+//该类基于世界上一个小区域的map_网格计算代价。map_网格覆盖costmap，costmap包含感测障碍物的信息。
+//map_网格通过将某些单元格设置为距离0来使用，然后在其周围传播距离，填充其周围可到达的区域
 /**
  * This class provides cost based on a map_grid of a small area of the world.
  * The map_grid covers a the costmap, the costmap containing the information
@@ -119,11 +121,11 @@ public:
   double getCellCosts(unsigned int cx, unsigned int cy);
 
 private:
-  std::vector<geometry_msgs::PoseStamped> target_poses_;
-  costmap_2d::Costmap2D* costmap_;
+  std::vector<geometry_msgs::PoseStamped> target_poses_;//目标点集合
+  costmap_2d::Costmap2D* costmap_;//代价地图
 
-  base_local_planner::MapGrid map_;
-  CostAggregationType aggregationType_;
+  base_local_planner::MapGrid map_;//保存距离数据的栅格地图
+  CostAggregationType aggregationType_;//汇总路径代价的类型
   /// xshift and yshift allow scoring for different
   // ooints of robots than center, like fron or back
   // this can help with alignment or keeping specific

@@ -35,33 +35,34 @@
 #define TRAJECTORY_ROLLOUT_MAP_CELL_H_
 
 #include <base_local_planner/trajectory_inc.h>
-
+//保存路径距离和目标点距离的栅格数据，用于计算经过该点轨迹的得分
 namespace base_local_planner {
-  /**
+/**
    * @class MapCell
    * @brief Stores path distance and goal distance information used for scoring trajectories
    */
-  class MapCell{
-    public:
-      /**
+class MapCell{
+public:
+  /**
        * @brief  Default constructor
        */
-      MapCell();
+  MapCell();
 
-      /**
+  /**
        * @brief  Copy constructor
        * @param mc The MapCell to be copied
        */
-      MapCell(const MapCell& mc);
-
-      unsigned int cx, cy; ///< @brief Cell index in the grid map
-
-      double target_dist; ///< @brief Distance to planner's path
-
-      bool target_mark; ///< @brief Marks for computing path/goal distances
-
-      bool within_robot; ///< @brief Mark for cells within the robot footprint
-  };
+  MapCell(const MapCell& mc);
+  ///< @brief Cell index in the grid map
+  unsigned int cx; //栅格地图的宽度x的索引
+  unsigned cy;//栅格地图的高度y的索引
+  ///< @brief Distance to planner's path
+  double target_dist; //实际运行轨迹和规划轨迹的距离
+  ///< @brief Marks for computing path/goal distances
+  bool target_mark;//是否已经计算路径或者目标的距离
+  ///< @brief Mark for cells within the robot footprint
+  bool within_robot;//是否标记机器人底盘对应的栅格
 };
+}
 
 #endif

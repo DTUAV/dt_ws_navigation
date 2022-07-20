@@ -39,27 +39,43 @@
 #include <algorithm>
 #include <stdio.h>
 namespace global_planner {
-
+/*
+  potential: 势场数据
+  start_x: 起点x
+  start_y: 起点y
+  end_x: 目标点x
+  end_y: 目标点y
+  path：保存路径点(路径是倒过来的，第1个元素是目标点)
+*/
 bool GridPath::getPath(float* potential, double start_x, double start_y, double end_x, double end_y, std::vector<std::pair<float, float> >& path) {
-    std::pair<float, float> current;
+
+    std::pair<float, float> current;//这个作为路径点的临时变量
+
+    //从目标点往起始点回溯路径，因为这里使用的是势场不是代价，在起点的势场是最低的
     current.first = end_x;
     current.second = end_y;
 
-    int start_index = getIndex(start_x, start_y);
+    int start_index = getIndex(start_x, start_y);//获取起点对应的索引，作为遍历结果的判断条件
 
-    path.push_back(current);
-    int c = 0;
-    int ns = xs_ * ys_;
+    path.push_back(current);//先将目标点压入
+
+    int c = 0;//作为遍历退出条件，当遍历很久时退出
+
+    int ns = xs_ * ys_;//整个栅格的总数
     
-    while (getIndex(current.first, current.second) != start_index) {
-        float min_val = 1e10;
-        int min_x = 0, min_y = 0;
+    while (getIndex(current.first, current.second) != start_index) {//如果当前的索引不等于起始点索引，继续回溯路径
+
+        float min_val = 1e10;//设置最小的代价为无穷大
+        int min_x = 0, min_y = 0;//势场最小的栅格点
+        //在一个点的上中下，左中右找最小势场的点
         for (int xd = -1; xd <= 1; xd++) {
             for (int yd = -1; yd <= 1; yd++) {
                 if (xd == 0 && yd == 0)
-                    continue;
-                int x = current.first + xd, y = current.second + yd;
-                int index = getIndex(x, y);
+                    continue;//跳过本身的那个点
+                int x = current.first + xd;//当前宽度x
+                int y = current.second + yd;//当前高度y
+                int index = getIndex(x, y);//获取当前宽度和高度对应的索引
+                //找该点附近最小的势场的点
                 if (potential[index] < min_val) {
                     min_val = potential[index];
                     min_x = x;
@@ -67,17 +83,20 @@ bool GridPath::getPath(float* potential, double start_x, double start_y, double 
                 }
             }
         }
+        //找到地图的起点，这一点为不可到达点，说明路径回溯失败，返回
         if (min_x == 0 && min_y == 0)
             return false;
+        //保存路径点
         current.first = min_x;
         current.second = min_y;
         path.push_back(current);
-        
+
+        //为了保证程序不陷入死循环，这里的参数4是需要调整的
         if(c++>ns*4){
             return false;
         }
-
     }
+
     return true;
 }
 

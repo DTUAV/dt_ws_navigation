@@ -41,7 +41,7 @@
 #include <base_local_planner/trajectory.h>
 
 namespace base_local_planner {
-
+//这个提供一个基类去计算一个区间将所有轨迹的代价
 /**
  * @class TrajectoryCostFunction
  * @brief Provides an interface for critics of trajectories
@@ -62,12 +62,14 @@ public:
   /**
    * return a score for trajectory traj
    */
+  //虚函数，返回轨迹的代价
   virtual double scoreTrajectory(Trajectory &traj) = 0;
 
+  //获取代价的缩放参数
   double getScale() {
     return scale_;
   }
-
+  //设置代价的缩放参数
   void setScale(double scale) {
     scale_ = scale;
   }
@@ -78,7 +80,7 @@ protected:
   TrajectoryCostFunction(double scale = 1.0): scale_(scale) {}
 
 private:
-  double scale_;
+  double scale_;//代价的缩放参数
 };
 
 }

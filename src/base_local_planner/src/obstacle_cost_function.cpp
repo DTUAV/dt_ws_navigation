@@ -45,7 +45,7 @@ namespace base_local_planner {
 ObstacleCostFunction::ObstacleCostFunction(costmap_2d::Costmap2D* costmap) 
     : costmap_(costmap), sum_scores_(false) {
   if (costmap != NULL) {
-    world_model_ = new base_local_planner::CostmapModel(*costmap_);
+    world_model_ = new base_local_planner::CostmapModel(*costmap_); //这个框架主要采用的是代价地图的环境模型
   }
 }
 
@@ -55,7 +55,7 @@ ObstacleCostFunction::~ObstacleCostFunction() {
   }
 }
 
-
+//设置相关参数，最大平移速度，最大的缩放参数，速度的缩放参数
 void ObstacleCostFunction::setParams(double max_trans_vel, double max_scaling_factor, double scaling_speed) {
   // TODO: move this to prepare if possible
   max_trans_vel_ = max_trans_vel;
@@ -63,6 +63,7 @@ void ObstacleCostFunction::setParams(double max_trans_vel, double max_scaling_fa
   scaling_speed_ = scaling_speed;
 }
 
+//设置机器人底盘数据
 void ObstacleCostFunction::setFootprint(std::vector<geometry_msgs::Point> footprint_spec) {
   footprint_spec_ = footprint_spec;
 }
@@ -71,6 +72,7 @@ bool ObstacleCostFunction::prepare() {
   return true;
 }
 
+//核心函数，计算障碍物的代价
 double ObstacleCostFunction::scoreTrajectory(Trajectory &traj) {
   double cost = 0;
   double scale = getScalingFactor(traj, scaling_speed_, max_trans_vel_, max_scaling_factor_);
@@ -80,7 +82,7 @@ double ObstacleCostFunction::scoreTrajectory(Trajectory &traj) {
     ROS_ERROR("Footprint spec is empty, maybe missing call to setFootprint?");
     return -9;
   }
-
+//循环计算所有轨迹点的代价
   for (unsigned int i = 0; i < traj.getPointsSize(); ++i) {
     traj.getPoint(i, px, py, pth);
     double f_cost = footprintCost(px, py, pth,
@@ -100,10 +102,12 @@ double ObstacleCostFunction::scoreTrajectory(Trajectory &traj) {
 }
 
 double ObstacleCostFunction::getScalingFactor(Trajectory &traj, double scaling_speed, double max_trans_vel, double max_scaling_factor) {
+
   double vmag = hypot(traj.xv_, traj.yv_);
 
   //if we're over a certain speed threshold, we'll scale the robot's
   //footprint to make it either slow down or stay further from walls
+  //如果我们超过某个速度阈值，我们将缩放机器人的足迹，使其减速或远离墙壁
   double scale = 1.0;
   if (vmag > scaling_speed) {
     //scale up to the max scaling factor linearly... this could be changed later

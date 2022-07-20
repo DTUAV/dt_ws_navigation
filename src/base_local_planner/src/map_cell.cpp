@@ -49,4 +49,4 @@ namespace base_local_planner{
       target_mark(mc.target_mark),
       within_robot(mc.within_robot)
   {}
-};
+}

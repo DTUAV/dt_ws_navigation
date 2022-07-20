@@ -42,7 +42,7 @@
 
 #include <base_local_planner/costmap_model.h>
 #include <costmap_2d/costmap_2d.h>
-
+//障碍物的代价函数 //如果机器人足迹在轨迹的任何点上处于障碍物中，则使用costmap 2d分配负成本
 namespace base_local_planner {
 
 /**
@@ -76,11 +76,14 @@ public:
       base_local_planner::WorldModel* world_model);
 
 private:
-  costmap_2d::Costmap2D* costmap_;
-  std::vector<geometry_msgs::Point> footprint_spec_;
-  base_local_planner::WorldModel* world_model_;
-  double max_trans_vel_;
-  bool sum_scores_;
+  costmap_2d::Costmap2D* costmap_;//代价地图
+  std::vector<geometry_msgs::Point> footprint_spec_;//底盘位置数据
+  base_local_planner::WorldModel* world_model_;//环境模型，这里主要是costmap_model
+ //如果我们超过某个速度阈值，我们将缩放机器人的足迹，使其减速或远离墙壁
+  //scaling_speed是缩放机器人底盘的速度阈值
+  //max_scaling_factor是缩放的参数，如果速度大了就放大机器人的汽车底盘，给制动留更多的缓冲时间和安全裕度
+  double max_trans_vel_;//最大的平移速度
+  bool sum_scores_;//是否计算得分的总和
   //footprint scaling with velocity;
   double max_scaling_factor_, scaling_speed_;
 };

@@ -38,17 +38,19 @@
 #ifndef _GRADIENT_PATH_H
 #define _GRADIENT_PATH_H
 
-#include<global_planner/traceback.h>
+#include <global_planner/traceback.h>
 #include <math.h>
 #include <algorithm>
 
 namespace global_planner {
 
+//获取梯度路径，对获取的路径进行插值
 class GradientPath : public Traceback {
     public:
         GradientPath(PotentialCalculator* p_calc);
         ~GradientPath();
 
+        //继承基类的虚函数，用于设置地图数据（梯度数据、势场数据）的大小
         void setSize(int xs, int ys);
 
         //
@@ -61,16 +63,25 @@ class GradientPath : public Traceback {
         //  2. Doesn't get near goal
         //  3. Surrounded by high potentials
         //
+        //这里对生成的路径做进一步的修正
         bool getPath(float* potential, double start_x, double start_y, double end_x, double end_y, std::vector<std::pair<float, float> >& path);
+
     private:
+        //内联函数，根据给定x和y方向增量，获取距离n最近的点
         inline int getNearestPoint(int stc, float dx, float dy) {
+
             int pt = stc + (int)round(dx) + (int)(xs_ * round(dy));
-            return std::max(0, std::min(xs_ * ys_ - 1, pt));
+
+            return std::max(0, std::min(xs_ * ys_ - 1, pt));//保证该点的索引不超过地图的边界
         }
-        float gradCell(float* potential, int n);
 
-        float *gradx_, *grady_; /**< gradient arrays, size of potential array */
+        float gradCell(float* potential, int n); //获取栅格地图中第n索引的梯度，根据规划器构建的势场求解
 
+        //地图的梯度数据
+        float *gradx_;
+        float *grady_; /**< gradient arrays, size of potential array */
+
+        //地图点的增量
         float pathStep_; /**< step size for following gradient */
 };
 

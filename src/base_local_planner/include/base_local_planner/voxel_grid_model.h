@@ -175,5 +175,5 @@ namespace base_local_planner {
       double sq_obstacle_range_;  ///< @brief The square distance at which we no longer add obstacles to the grid
 
   };
-};
+}
 #endif

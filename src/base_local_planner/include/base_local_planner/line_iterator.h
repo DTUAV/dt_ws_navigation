@@ -35,6 +35,7 @@ namespace base_local_planner
 {
 
 /** An iterator implementing Bresenham Ray-Tracing. */
+//从起点到终点的bresenham算法
 class LineIterator
 {
 public:
@@ -134,8 +135,14 @@ private:
 
   int curpixel_; ///< index of current point in line loop.
 
-  int xinc1_, xinc2_, yinc1_, yinc2_;
-  int den_, num_, numadd_, numpixels_;
+  int xinc1_;
+  int xinc2_;
+  int yinc1_;
+  int yinc2_;
+  int den_;
+  int num_;
+  int numadd_;
+  int numpixels_; //最大的距离，第一个点和第二个点x轴差和y轴差的最大值，每次迭代是走一个点，所以这个是最终走的步长
 };
 
 } // end namespace base_local_planner

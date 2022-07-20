@@ -60,6 +60,7 @@ namespace base_local_planner {
    * @param  goal_y The desired y value for the goal
    * @return distance to goal
    */
+  // 获取当前机器人的位置距离目标点的距离
   double getGoalPositionDistance(const geometry_msgs::PoseStamped& global_pose, double goal_x, double goal_y);
 
   /**
@@ -69,6 +70,7 @@ namespace base_local_planner {
    * @param  goal_y The desired y value for the goal
    * @return angular difference
    */
+  //获取当前机器人航向角与目标航向角的距离
   double getGoalOrientationAngleDifference(const geometry_msgs::PoseStamped& global_pose, double goal_th);
 
   /**
@@ -77,6 +79,7 @@ namespace base_local_planner {
    * @param  pub The published to use
    * @param  r,g,b,a The color and alpha value to use when publishing
    */
+  //发布规划的路径
   void publishPlan(const std::vector<geometry_msgs::PoseStamped>& path, const ros::Publisher& pub);
 
   /**
@@ -85,6 +88,7 @@ namespace base_local_planner {
    * @param plan The plan to be pruned
    * @param global_plan The plan to be pruned in the frame of the planner
    */
+  //清除部分在机器人后面的全局位置
   void prunePlan(const geometry_msgs::PoseStamped& global_pose, std::vector<geometry_msgs::PoseStamped>& plan, std::vector<geometry_msgs::PoseStamped>& global_plan);
 
   /**
@@ -97,6 +101,7 @@ namespace base_local_planner {
    * @param global_frame The frame to transform the plan to
    * @param transformed_plan Populated with the transformed plan
    */
+  //将机器人的全局规划从规划器框架转换为代价图框架
   bool transformGlobalPlan(const tf2_ros::Buffer& tf,
       const std::vector<geometry_msgs::PoseStamped>& global_plan,
       const geometry_msgs::PoseStamped& global_robot_pose,
@@ -112,6 +117,7 @@ namespace base_local_planner {
    * @param goal_pose the pose to copy into
    * @return True if achieved, false otherwise
    */
+  //获取当前的目标点
   bool getGoalPose(const tf2_ros::Buffer& tf,
       const std::vector<geometry_msgs::PoseStamped>& global_plan,
       const std::string& global_frame,
@@ -130,6 +136,7 @@ namespace base_local_planner {
    * @param yaw_goal_tolerance The rotational tolerance on reaching the goal
    * @return True if achieved, false otherwise
    */
+  //判断是否达到目标点
   bool isGoalReached(const tf2_ros::Buffer& tf,
       const std::vector<geometry_msgs::PoseStamped>& global_plan,
       const costmap_2d::Costmap2D& costmap,
@@ -146,8 +153,9 @@ namespace base_local_planner {
    * @param trans_stopped_velocity The translational velocity below which the robot is considered stopped
    * @return True if the robot is stopped, false otherwise
    */
+  //检查机器人是否停止
   bool stopped(const nav_msgs::Odometry& base_odom, 
       const double& rot_stopped_velocity,
       const double& trans_stopped_velocity);
-};
+}
 #endif
