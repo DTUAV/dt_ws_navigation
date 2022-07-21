@@ -45,11 +45,11 @@
 #include <base_local_planner/trajectory_search.h>
 
 namespace base_local_planner {
-
+//这个类主要是计算轨迹的得分并得出一个在所有轨迹中最优的一条
 /**
  * @class SimpleScoredSamplingPlanner
  * @brief Generates a local plan using the given generator and cost functions.
- * Assumes less cost are best, and negative costs indicate infinite costs
+ * Assumes less cost are best, and negative costs indicate infinite costs//代价越低代表轨迹越好，负代价表示代价无限大
  *
  * This is supposed to be a simple and robust implementation of
  * the TrajectorySearch interface. More efficient search may well be
@@ -71,6 +71,7 @@ public:
    * passing max_samples = -1 (default): Each Sampling planner will continue to call
    * generator until generator runs out of samples (or forever if that never happens)
    */
+  //核心函数，计算所有轨迹的代价
   SimpleScoredSamplingPlanner(std::vector<TrajectorySampleGenerator*> gen_list, std::vector<TrajectoryCostFunction*>& critics, int max_samples = -1);
 
   /**
@@ -78,6 +79,7 @@ public:
    * of positive costs, aborting as soon as a negative cost are found or costs greater
    * than positive best_traj_cost accumulated
    */
+  //计算当前轨迹的得分
   double scoreTrajectory(Trajectory& traj, double best_traj_cost);
 
   /**
@@ -91,14 +93,15 @@ public:
    * @param traj The container to write the result to
    * @param all_explored pass NULL or a container to collect all trajectories for debugging (has a penalty)
    */
+  //在所有轨迹中找出最好的一条
   bool findBestTrajectory(Trajectory& traj, std::vector<Trajectory>* all_explored = 0);
 
 
 private:
-  std::vector<TrajectorySampleGenerator*> gen_list_;
-  std::vector<TrajectoryCostFunction*> critics_;
+  std::vector<TrajectorySampleGenerator*> gen_list_;//生成的所有轨迹
+  std::vector<TrajectoryCostFunction*> critics_;//代价计算函数
 
-  int max_samples_;
+  int max_samples_; //检查最大采样轨迹的数量
 };
 
 

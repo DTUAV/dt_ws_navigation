@@ -41,7 +41,7 @@
 #include <base_local_planner/trajectory_sample_generator.h>
 #include <base_local_planner/local_planner_limits.h>
 #include <Eigen/Core>
-
+//轨迹生成器
 namespace base_local_planner {
 
 /**
@@ -77,11 +77,11 @@ public:
    * @param discretize_by_time if true, the trajectory is split according in chunks of the same duration, else of same length
    */
   void initialise(
-      const Eigen::Vector3f& pos,
-      const Eigen::Vector3f& vel,
-      const Eigen::Vector3f& goal,
-      base_local_planner::LocalPlannerLimits* limits,
-      const Eigen::Vector3f& vsamples,
+      const Eigen::Vector3f& pos, /*当前机器人的位姿*/
+      const Eigen::Vector3f& vel, /*当前机器人的速度*/
+      const Eigen::Vector3f& goal,/*机器人目标位姿*/
+      base_local_planner::LocalPlannerLimits* limits,/*机器人的约束参数*/
+      const Eigen::Vector3f& vsamples,/*划分给定维度的样本数，也就是x轴多少个点，y轴多少个点*/
       std::vector<Eigen::Vector3f> additional_samples,
       bool discretize_by_time = false);
 
@@ -109,6 +109,7 @@ public:
    * @param use_dwa whether to use DWA or trajectory rollout
    * @param sim_period distance between points in one trajectory
    */
+  //设置主要的参数，模拟时间、模拟平移的间隔、模拟角度的间隔、是否使用dwa算法及dwa算法模拟周期
   void setParameters(double sim_time,
       double sim_granularity,
       double angular_sim_granularity,
@@ -125,13 +126,14 @@ public:
    */
   bool nextTrajectory(Trajectory &traj);
 
-
+//根据当前位姿、速度、增量时间计算下一个位姿
   static Eigen::Vector3f computeNewPositions(const Eigen::Vector3f& pos,
       const Eigen::Vector3f& vel, double dt);
 
+//根据当前速度、目标速度、加速度约束和增量时间，计算下一个速度
   static Eigen::Vector3f computeNewVelocities(const Eigen::Vector3f& sample_target_vel,
       const Eigen::Vector3f& vel, Eigen::Vector3f acclimits, double dt);
-
+//生成轨迹
   bool generateTrajectory(
         Eigen::Vector3f pos,
         Eigen::Vector3f vel,
@@ -140,20 +142,23 @@ public:
 
 protected:
 
-  unsigned int next_sample_index_;
+  unsigned int next_sample_index_;//下一个采样点的索引
   // to store sample params of each sample between init and generation
   std::vector<Eigen::Vector3f> sample_params_;
-  base_local_planner::LocalPlannerLimits* limits_;
-  Eigen::Vector3f pos_;
-  Eigen::Vector3f vel_;
+  base_local_planner::LocalPlannerLimits* limits_;//局部规划器的约束参数
+  Eigen::Vector3f pos_;//起始位置
+  Eigen::Vector3f vel_;//起始速度
 
   // whether velocity of trajectory changes over time or not
-  bool continued_acceleration_;
-  bool discretize_by_time_;
+  bool continued_acceleration_;//是否连续加速
+  bool discretize_by_time_;//是否随时间离散化
 
-  double sim_time_, sim_granularity_, angular_sim_granularity_;
-  bool use_dwa_;
-  double sim_period_; // only for dwa
+  double sim_time_;//模拟的时间
+  double sim_granularity_;//模拟的间隔
+  double angular_sim_granularity_;//角速度模拟的间隔
+
+  bool use_dwa_;//是否使用dwa算法
+  double sim_period_; // only for dwa//dwa算法的模拟间隔
 };
 
 } /* namespace base_local_planner */

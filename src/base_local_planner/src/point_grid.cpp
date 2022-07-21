@@ -53,13 +53,14 @@ namespace base_local_planner {
 PointGrid::PointGrid(double size_x, double size_y, double resolution, geometry_msgs::Point origin, double max_z, double obstacle_range, double min_seperation) :
   resolution_(resolution), origin_(origin), max_z_(max_z), sq_obstacle_range_(obstacle_range * obstacle_range), sq_min_separation_(min_seperation * min_seperation)
   {
-    width_ = (int) (size_x / resolution_);
+    width_ = (int) (size_x / resolution_);//size_x是多少米
     height_ = (int) (size_y / resolution_);
     cells_.resize(width_ * height_);
   }
 
   double PointGrid::footprintCost(const geometry_msgs::Point& position, const std::vector<geometry_msgs::Point>& footprint,
-      double inscribed_radius, double circumscribed_radius){
+      double inscribed_radius, double circumscribed_radius) {
+
     //the half-width of the circumscribed sqaure of the robot is equal to the circumscribed radius
     double outer_square_radius = circumscribed_radius;
 
@@ -531,6 +532,7 @@ PointGrid::PointGrid(double size_x, double size_y, double resolution, geometry_m
     }
   }
 
+//求两条线段的交点
   void PointGrid::intersectionPoint(const geometry_msgs::Point& v1, const geometry_msgs::Point& v2,
       const geometry_msgs::Point& u1, const geometry_msgs::Point& u2, geometry_msgs::Point& result){
     //generate the equation for line 1

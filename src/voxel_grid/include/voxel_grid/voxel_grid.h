@@ -46,7 +46,7 @@
 #include <algorithm>
 #include <ros/console.h>
 #include <ros/assert.h>
-
+//
 /**
  * @class VoxelGrid
  * @brief A 3D grid structure that stores points as an integer array.
