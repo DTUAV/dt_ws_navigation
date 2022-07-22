@@ -43,7 +43,7 @@
 
 namespace costmap_2d
 {
-
+//这个主要是用距离传感器去实时更新栅格地图
 class CostmapLayer : public Layer, public Costmap2D
 {
 public:
@@ -51,13 +51,15 @@ public:
     extra_min_x_(1e6), extra_max_x_(-1e6),
     extra_min_y_(1e6), extra_max_y_(-1e6) {}
 
+  //是否是离散地图
   bool isDiscretized()
   {
     return true;
   }
-
+  //调整地图的大小与其他的相匹配
   virtual void matchSize();
 
+  //清除地图中指定区域的地图数据
   virtual void clearArea(int start_x, int start_y, int end_x, int end_y);
 
   /**
@@ -69,6 +71,7 @@ public:
    * @param mx1 Maximum x value of the bounding box
    * @param my1 Maximum y value of the bounding box
    */
+  //如果其他地图层修改了某个地图区域的数据，这个地图也需要添加这部分数据，动态更新调整
   void addExtraBounds(double mx0, double my0, double mx1, double my1);
 
 protected:
@@ -79,6 +82,7 @@ protected:
    * TrueOverwrite means every value from this layer
    * is written into the master grid.
    */
+  //更新当前地图的值更新主地图
   void updateWithTrueOverwrite(costmap_2d::Costmap2D& master_grid, int min_i, int min_j, int max_i, int max_j);
 
   /*
@@ -88,6 +92,7 @@ protected:
    * Overwrite means every valid value from this layer
    * is written into the master grid (does not copy NO_INFORMATION)
    */
+  //这个函数没有利用本地无信息的栅格值更新主地图
   void updateWithOverwrite(costmap_2d::Costmap2D& master_grid, int min_i, int min_j, int max_i, int max_j);
 
   /*
@@ -99,6 +104,7 @@ protected:
    * it is overwritten. If the layer's value is NO_INFORMATION,
    * the master value does not change.
    */
+  //将本层的最大值更新主地图，也就是如果本层地图的值大于主地图，则更新主地图
   void updateWithMax(costmap_2d::Costmap2D& master_grid, int min_i, int min_j, int max_i, int max_j);
 
   /*
@@ -113,6 +119,7 @@ protected:
    * If the sum value is larger than INSCRIBED_INFLATED_OBSTACLE,
    * the master value is set to (INSCRIBED_INFLATED_OBSTACLE - 1).
    */
+  //通过将本层地图值和主地图值相加作为主地图的值，如果本层地图值信息是未知，则不更新
   void updateWithAddition(costmap_2d::Costmap2D& master_grid, int min_i, int min_j, int max_i, int max_j);
 
   /**
@@ -126,6 +133,7 @@ protected:
    * @param max_x bounding box
    * @param max_y bounding box
    */
+   //获取包含x和y的边界
   void touch(double x, double y, double* min_x, double* min_y, double* max_x, double* max_y);
 
   /*
@@ -140,7 +148,9 @@ protected:
    * @param max_x bounding box (input and output)
    * @param max_y bounding box (input and output)
    */
+  //
   void useExtraBounds(double* min_x, double* min_y, double* max_x, double* max_y);
+
   bool has_extra_bounds_;
 
 private:

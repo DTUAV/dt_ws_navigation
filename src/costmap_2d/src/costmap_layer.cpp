@@ -2,7 +2,7 @@
 
 namespace costmap_2d
 {
-
+//获取包含x和y的方形边界
 void CostmapLayer::touch(double x, double y, double* min_x, double* min_y, double* max_x, double* max_y)
 {
     *min_x = std::min(x, *min_x);
@@ -11,13 +11,14 @@ void CostmapLayer::touch(double x, double y, double* min_x, double* min_y, doubl
     *max_y = std::max(y, *max_y);
 }
 
+//与各层地图的大小保持一致
 void CostmapLayer::matchSize()
 {
     Costmap2D* master = layered_costmap_->getCostmap();
-    resizeMap(master->getSizeInCellsX(), master->getSizeInCellsY(), master->getResolution(),
-            master->getOriginX(), master->getOriginY());
+    resizeMap(master->getSizeInCellsX(), master->getSizeInCellsY(), master->getResolution(), master->getOriginX(), master->getOriginY());
 }
 
+//清除指定区域，设置该区域的值为未知
 void CostmapLayer::clearArea(int start_x, int start_y, int end_x, int end_y)
 {
   unsigned char* grid = getCharMap();
@@ -35,6 +36,7 @@ void CostmapLayer::clearArea(int start_x, int start_y, int end_x, int end_y)
   }
 }
 
+//将指定的边界包含在处理里面
 void CostmapLayer::addExtraBounds(double mx0, double my0, double mx1, double my1)
 {
     extra_min_x_ = std::min(mx0, extra_min_x_);
@@ -44,6 +46,7 @@ void CostmapLayer::addExtraBounds(double mx0, double my0, double mx1, double my1
     has_extra_bounds_ = true;
 }
 
+//获取要处理的边界
 void CostmapLayer::useExtraBounds(double* min_x, double* min_y, double* max_x, double* max_y)
 {
     if (!has_extra_bounds_)
@@ -60,6 +63,7 @@ void CostmapLayer::useExtraBounds(double* min_x, double* min_y, double* max_x, d
     has_extra_bounds_ = false;
 }
 
+//
 void CostmapLayer::updateWithMax(costmap_2d::Costmap2D& master_grid, int min_i, int min_j, int max_i, int max_j)
 {
   if (!enabled_)
@@ -79,7 +83,7 @@ void CostmapLayer::updateWithMax(costmap_2d::Costmap2D& master_grid, int min_i, 
       }
 
       unsigned char old_cost = master_array[it];
-      if (old_cost == NO_INFORMATION || old_cost < costmap_[it])
+      if (old_cost == NO_INFORMATION || old_cost < costmap_[it])//主地图的值小于本地图或者主地图的值为未知，将本地图的值赋给主地图
         master_array[it] = costmap_[it];
       it++;
     }
@@ -99,7 +103,7 @@ void CostmapLayer::updateWithTrueOverwrite(costmap_2d::Costmap2D& master_grid, i
     unsigned int it = span*j+min_i;
     for (int i = min_i; i < max_i; i++)
     {
-      master[it] = costmap_[it];
+      master[it] = costmap_[it];//将本地图的值全部覆盖主地图
       it++;
     }
   }
@@ -117,7 +121,7 @@ void CostmapLayer::updateWithOverwrite(costmap_2d::Costmap2D& master_grid, int m
     unsigned int it = span*j+min_i;
     for (int i = min_i; i < max_i; i++)
     {
-      if (costmap_[it] != NO_INFORMATION)
+      if (costmap_[it] != NO_INFORMATION)//不覆盖主地图位置信息的区域
         master[it] = costmap_[it];
       it++;
     }
@@ -142,11 +146,11 @@ void CostmapLayer::updateWithAddition(costmap_2d::Costmap2D& master_grid, int mi
       }
 
       unsigned char old_cost = master_array[it];
-      if (old_cost == NO_INFORMATION)
+      if (old_cost == NO_INFORMATION)//如果主地图的信息为未知，则将本地图的数据赋给主地图
         master_array[it] = costmap_[it];
       else
       {
-        int sum = old_cost + costmap_[it];
+        int sum = old_cost + costmap_[it];//将两个地图的值求和并赋给主地图
         if (sum >= costmap_2d::INSCRIBED_INFLATED_OBSTACLE)
             master_array[it] = costmap_2d::INSCRIBED_INFLATED_OBSTACLE - 1;
         else

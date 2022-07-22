@@ -48,6 +48,7 @@ namespace costmap_2d
  * @class Costmap2DPublisher
  * @brief A tool to periodically publish visualization data from a Costmap2D
  */
+//定时发布代价地图的可视化数据
 class Costmap2DPublisher
 {
 public:
@@ -99,9 +100,9 @@ private:
   double saved_origin_x_, saved_origin_y_;
   bool active_;
   bool always_send_full_costmap_;
-  ros::Publisher costmap_pub_;
-  ros::Publisher costmap_update_pub_;
-  nav_msgs::OccupancyGrid grid_;
+  ros::Publisher costmap_pub_;//发布整个代价地图
+  ros::Publisher costmap_update_pub_;//发布更新的代价地图
+  nav_msgs::OccupancyGrid grid_;//以占据栅格地图的方式发布
   static char* cost_translation_table_;  ///< Translate from 0-255 values in costmap to -1 to 100 values in message.
 };
 }  // namespace costmap_2d

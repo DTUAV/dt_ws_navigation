@@ -57,38 +57,38 @@
 #include <tf2/utils.h>
 
 //register this planner as a BaseLocalPlanner plugin
-PLUGINLIB_EXPORT_CLASS(base_local_planner::TrajectoryPlannerROS, nav_core::BaseLocalPlanner)
+PLUGINLIB_EXPORT_CLASS(base_local_planner::TrajectoryPlannerROS, nav_core::BaseLocalPlanner)//注册局部路径规划器
 
 namespace base_local_planner {
-
+//动态配置参数的回调函数
   void TrajectoryPlannerROS::reconfigureCB(BaseLocalPlannerConfig &config, uint32_t level) {
-      if (setup_ && config.restore_defaults) {
-        config = default_config_;
-        //Avoid looping
-        config.restore_defaults = false;
-      }
-      if ( ! setup_) {
-        default_config_ = config;
-        setup_ = true;
-      }
-      tc_->reconfigure(config);
-      reached_goal_ = false;
+    if (setup_ && config.restore_defaults) {
+      config = default_config_;
+      //Avoid looping
+      config.restore_defaults = false;
+    }
+    if ( ! setup_) {
+      default_config_ = config;
+      setup_ = true;
+    }
+    tc_->reconfigure(config);
+    reached_goal_ = false;
   }
 
   TrajectoryPlannerROS::TrajectoryPlannerROS() :
-      world_model_(NULL), tc_(NULL), costmap_ros_(NULL), tf_(NULL), setup_(false), initialized_(false), odom_helper_("odom") {}
+    world_model_(NULL), tc_(NULL), costmap_ros_(NULL), tf_(NULL), setup_(false), initialized_(false), odom_helper_("odom") {}
 
   TrajectoryPlannerROS::TrajectoryPlannerROS(std::string name, tf2_ros::Buffer* tf, costmap_2d::Costmap2DROS* costmap_ros) :
-      world_model_(NULL), tc_(NULL), costmap_ros_(NULL), tf_(NULL), setup_(false), initialized_(false), odom_helper_("odom") {
+    world_model_(NULL), tc_(NULL), costmap_ros_(NULL), tf_(NULL), setup_(false), initialized_(false), odom_helper_("odom") {
 
-      //initialize the planner
-      initialize(name, tf, costmap_ros);
+    //initialize the planner
+    initialize(name, tf, costmap_ros);
   }
 
   void TrajectoryPlannerROS::initialize(
-      std::string name,
-      tf2_ros::Buffer* tf,
-      costmap_2d::Costmap2DROS* costmap_ros){
+        std::string name,
+        tf2_ros::Buffer* tf,
+        costmap_2d::Costmap2DROS* costmap_ros){
     if (! isInitialized()) {
 
       ros::NodeHandle private_nh("~/" + name);
@@ -174,7 +174,7 @@ namespace base_local_planner {
                                                                   "goal_distance_bias",
                                                                   "gdist_scale",
                                                                   0.6);
-      // values of the deprecated params need to be applied to the current params, as defaults 
+      // values of the deprecated params need to be applied to the current params, as defaults
       // of defined for dynamic reconfigure will override them otherwise.
       if (private_nh.hasParam("pdist_scale") & !private_nh.hasParam("path_distance_bias"))
       {
@@ -251,10 +251,10 @@ namespace base_local_planner {
       footprint_spec_ = costmap_ros_->getRobotFootprint();
 
       tc_ = new TrajectoryPlanner(*world_model_, *costmap_, footprint_spec_,
-          acc_lim_x_, acc_lim_y_, acc_lim_theta_, sim_time, sim_granularity, vx_samples, vtheta_samples, path_distance_bias,
-          goal_distance_bias, occdist_scale, heading_lookahead, oscillation_reset_dist, escape_reset_dist, escape_reset_theta, holonomic_robot,
-          max_vel_x, min_vel_x, max_vel_th_, min_vel_th_, min_in_place_vel_th_, backup_vel,
-          dwa, heading_scoring, heading_scoring_timestep, meter_scoring, simple_attractor, y_vels, stop_time_buffer, sim_period_, angular_sim_granularity);
+                                  acc_lim_x_, acc_lim_y_, acc_lim_theta_, sim_time, sim_granularity, vx_samples, vtheta_samples, path_distance_bias,
+                                  goal_distance_bias, occdist_scale, heading_lookahead, oscillation_reset_dist, escape_reset_dist, escape_reset_theta, holonomic_robot,
+                                  max_vel_x, min_vel_x, max_vel_th_, min_vel_th_, min_in_place_vel_th_, backup_vel,
+                                  dwa, heading_scoring, heading_scoring_timestep, meter_scoring, simple_attractor, y_vels, stop_time_buffer, sim_period_, angular_sim_granularity);
 
       map_viz_.initialize(name, global_frame_, boost::bind(&TrajectoryPlanner::getCellCosts, tc_, _1, _2, _3, _4, _5, _6));
       initialized_ = true;
@@ -315,7 +315,7 @@ namespace base_local_planner {
     //we do want to check whether or not the command is valid
     double yaw = tf2::getYaw(global_pose.pose.orientation);
     bool valid_cmd = tc_->checkTrajectory(global_pose.pose.position.x, global_pose.pose.position.y, yaw,
-        robot_vel.pose.position.x, robot_vel.pose.position.y, vel_yaw, vx, vy, vth);
+                                          robot_vel.pose.position.x, robot_vel.pose.position.y, vel_yaw, vx, vy, vth);
 
     //if we have a valid command, we'll pass it on, otherwise we'll command all zeros
     if(valid_cmd){
@@ -340,8 +340,8 @@ namespace base_local_planner {
     double ang_diff = angles::shortest_angular_distance(yaw, goal_th);
 
     double v_theta_samp = ang_diff > 0.0 ? std::min(max_vel_th_,
-        std::max(min_in_place_vel_th_, ang_diff)) : std::max(min_vel_th_,
-        std::min(-1.0 * min_in_place_vel_th_, ang_diff));
+                                                    std::max(min_in_place_vel_th_, ang_diff)) : std::max(min_vel_th_,
+                                                                                                         std::min(-1.0 * min_in_place_vel_th_, ang_diff));
 
     //take the acceleration limits of the robot into account
     double max_acc_vel = fabs(vel_yaw) + acc_lim_theta_ * sim_period_;
@@ -350,18 +350,18 @@ namespace base_local_planner {
     v_theta_samp = sign(v_theta_samp) * std::min(std::max(fabs(v_theta_samp), min_acc_vel), max_acc_vel);
 
     //we also want to make sure to send a velocity that allows us to stop when we reach the goal given our acceleration limits
-    double max_speed_to_stop = sqrt(2 * acc_lim_theta_ * fabs(ang_diff)); 
+    double max_speed_to_stop = sqrt(2 * acc_lim_theta_ * fabs(ang_diff));
 
     v_theta_samp = sign(v_theta_samp) * std::min(max_speed_to_stop, fabs(v_theta_samp));
 
     // Re-enforce min_in_place_vel_th_.  It is more important than the acceleration limits.
     v_theta_samp = v_theta_samp > 0.0
-      ? std::min( max_vel_th_, std::max( min_in_place_vel_th_, v_theta_samp ))
-      : std::max( min_vel_th_, std::min( -1.0 * min_in_place_vel_th_, v_theta_samp ));
+        ? std::min( max_vel_th_, std::max( min_in_place_vel_th_, v_theta_samp ))
+        : std::max( min_vel_th_, std::min( -1.0 * min_in_place_vel_th_, v_theta_samp ));
 
     //we still want to lay down the footprint of the robot and check if the action is legal
     bool valid_cmd = tc_->checkTrajectory(global_pose.pose.position.x, global_pose.pose.position.y, yaw,
-        robot_vel.pose.position.x, robot_vel.pose.position.y, vel_yaw, 0.0, 0.0, v_theta_samp);
+                                          robot_vel.pose.position.x, robot_vel.pose.position.y, vel_yaw, 0.0, 0.0, v_theta_samp);
 
     ROS_DEBUG("Moving to desired goal orientation, th cmd: %.2f, valid_cmd: %d", v_theta_samp, valid_cmd);
 
@@ -516,7 +516,7 @@ namespace base_local_planner {
     //if we cannot move... tell someone
     if (path.cost_ < 0) {
       ROS_DEBUG_NAMED("trajectory_planner_ros",
-          "The rollout planner failed to find a valid plan. This means that the footprint of the robot was in collision for all simulated trajectories.");
+                      "The rollout planner failed to find a valid plan. This means that the footprint of the robot was in collision for all simulated trajectories.");
       local_plan.clear();
       publishPlan(transformed_plan, g_plan_pub_);
       publishPlan(local_plan, l_plan_pub_);
@@ -524,7 +524,7 @@ namespace base_local_planner {
     }
 
     ROS_DEBUG_NAMED("trajectory_planner_ros", "A valid velocity command of (%.2f, %.2f, %.2f) was found for this cycle.",
-        cmd_vel.linear.x, cmd_vel.linear.y, cmd_vel.angular.z);
+                    cmd_vel.linear.x, cmd_vel.linear.y, cmd_vel.angular.z);
 
     // Fill out the local plan
     for (unsigned int i = 0; i < path.getPointsSize(); ++i) {
@@ -567,9 +567,9 @@ namespace base_local_planner {
       }
 
       return tc_->checkTrajectory(global_pose.pose.position.x, global_pose.pose.position.y, tf2::getYaw(global_pose.pose.orientation),
-          base_odom.twist.twist.linear.x,
-          base_odom.twist.twist.linear.y,
-          base_odom.twist.twist.angular.z, vx_samp, vy_samp, vtheta_samp);
+                                  base_odom.twist.twist.linear.x,
+                                  base_odom.twist.twist.linear.y,
+                                  base_odom.twist.twist.angular.z, vx_samp, vy_samp, vtheta_samp);
 
     }
     ROS_WARN("Failed to get the pose of the robot. No trajectories will pass as legal in this case.");
@@ -597,9 +597,9 @@ namespace base_local_planner {
       }
 
       return tc_->scoreTrajectory(global_pose.pose.position.x, global_pose.pose.position.y, tf2::getYaw(global_pose.pose.orientation),
-          base_odom.twist.twist.linear.x,
-          base_odom.twist.twist.linear.y,
-          base_odom.twist.twist.angular.z, vx_samp, vy_samp, vtheta_samp);
+                                  base_odom.twist.twist.linear.x,
+                                  base_odom.twist.twist.linear.y,
+                                  base_odom.twist.twist.angular.z, vx_samp, vy_samp, vtheta_samp);
 
     }
     ROS_WARN("Failed to get the pose of the robot. No trajectories will pass as legal in this case.");
@@ -612,6 +612,6 @@ namespace base_local_planner {
       return false;
     }
     //return flag set in controller
-    return reached_goal_; 
+    return reached_goal_;
   }
-};
+}

@@ -42,6 +42,7 @@
 #include <boost/thread.hpp>
 #include <pluginlib/class_list_macros.h>
 
+//插件声明
 PLUGINLIB_EXPORT_CLASS(costmap_2d::InflationLayer, costmap_2d::Layer)
 
 using costmap_2d::LETHAL_OBSTACLE;
@@ -82,10 +83,10 @@ void InflationLayer::onInitialize()
     seen_ = NULL;
     seen_size_ = 0;
     need_reinflation_ = false;
+    //绑定动态配置参数的回调函数
+    dynamic_reconfigure::Server<costmap_2d::InflationPluginConfig>::CallbackType cb = boost::bind(&InflationLayer::reconfigureCB, this, _1, _2);
 
-    dynamic_reconfigure::Server<costmap_2d::InflationPluginConfig>::CallbackType cb = boost::bind(
-        &InflationLayer::reconfigureCB, this, _1, _2);
-
+    //如果动态配置服务不为空，则绑定回调函数，否则创建新的动态配置服务器并绑定回调函数
     if (dsrv_ != NULL){
       dsrv_->clearCallback();
       dsrv_->setCallback(cb);
@@ -96,10 +97,11 @@ void InflationLayer::onInitialize()
       dsrv_->setCallback(cb);
     }
   }
-
+  //调整地图的大小
   matchSize();
 }
 
+//动态配置参数
 void InflationLayer::reconfigureCB(costmap_2d::InflationPluginConfig &config, uint32_t level)
 {
   setInflationParameters(config.inflation_radius, config.cost_scaling_factor);
@@ -114,12 +116,17 @@ void InflationLayer::reconfigureCB(costmap_2d::InflationPluginConfig &config, ui
 void InflationLayer::matchSize()
 {
   boost::unique_lock < boost::recursive_mutex > lock(*inflation_access_);
+
   costmap_2d::Costmap2D* costmap = layered_costmap_->getCostmap();
-  resolution_ = costmap->getResolution();
+  resolution_ = costmap->getResolution();//匹配分辨率和大小
+
   cell_inflation_radius_ = cellDistance(inflation_radius_);
+
+
   computeCaches();
 
-  unsigned int size_x = costmap->getSizeInCellsX(), size_y = costmap->getSizeInCellsY();
+  unsigned int size_x = costmap->getSizeInCellsX(), size_y = costmap->getSizeInCellsY();//大小
+
   if (seen_)
     delete[] seen_;
   seen_size_ = size_x * size_y;
@@ -129,7 +136,7 @@ void InflationLayer::matchSize()
 void InflationLayer::updateBounds(double robot_x, double robot_y, double robot_yaw, double* min_x,
                                            double* min_y, double* max_x, double* max_y)
 {
-  if (need_reinflation_)
+  if (need_reinflation_)//是否需要全部重新更新代价地图
   {
     last_min_x_ = *min_x;
     last_min_y_ = *min_y;
@@ -161,34 +168,41 @@ void InflationLayer::updateBounds(double robot_x, double robot_y, double robot_y
   }
 }
 
+//机器人位姿变化后，这个会被调用
 void InflationLayer::onFootprintChanged()
 {
-  inscribed_radius_ = layered_costmap_->getInscribedRadius();
-  cell_inflation_radius_ = cellDistance(inflation_radius_);
-  computeCaches();
-  need_reinflation_ = true;
+  inscribed_radius_ = layered_costmap_->getInscribedRadius();//获取机器人的内接圆半径
+
+  cell_inflation_radius_ = cellDistance(inflation_radius_);//获取碰撞半径对应的栅格地图半径
+
+  computeCaches();//更新当前的距离容器和代价容器
+
+  need_reinflation_ = true; //因为机器人已经运动了，需要重新更新代价地图的区域
 
   ROS_DEBUG("InflationLayer::onFootprintChanged(): num footprint points: %lu,"
             " inscribed_radius_ = %.3f, inflation_radius_ = %.3f",
             layered_costmap_->getFootprint().size(), inscribed_radius_, inflation_radius_);
 }
 
+//更新指定区域的地图代价
 void InflationLayer::updateCosts(costmap_2d::Costmap2D& master_grid, int min_i, int min_j, int max_i, int max_j)
 {
   boost::unique_lock < boost::recursive_mutex > lock(*inflation_access_);
-  if (!enabled_ || (cell_inflation_radius_ == 0))
+
+  if (!enabled_ || (cell_inflation_radius_ == 0))//如果没有使能或者碰撞的半径等于0，就不更新地图的代价
     return;
 
   // make sure the inflation list is empty at the beginning of the cycle (should always be true)
   ROS_ASSERT_MSG(inflation_cells_.empty(), "The inflation list must be empty at the beginning of inflation");
 
-  unsigned char* master_array = master_grid.getCharMap();
-  unsigned int size_x = master_grid.getSizeInCellsX(), size_y = master_grid.getSizeInCellsY();
+  unsigned char* master_array = master_grid.getCharMap();//获取栅格地图的数据
+
+  unsigned int size_x = master_grid.getSizeInCellsX(), size_y = master_grid.getSizeInCellsY();//获取栅格地图的大小
 
   if (seen_ == NULL) {
     ROS_WARN("InflationLayer::updateCosts(): seen_ array is NULL");
     seen_size_ = size_x * size_y;
-    seen_ = new bool[seen_size_];
+    seen_ = new bool[seen_size_];//修改看到的范围
   }
   else if (seen_size_ != size_x * size_y)
   {
@@ -203,11 +217,13 @@ void InflationLayer::updateCosts(costmap_2d::Costmap2D& master_grid, int min_i, 
   // box min_i...max_j, by the amount cell_inflation_radius_.  Cells
   // up to that distance outside the box can still influence the costs
   // stored in cells inside the box.
+  //方形区域
   min_i -= cell_inflation_radius_;
   min_j -= cell_inflation_radius_;
   max_i += cell_inflation_radius_;
   max_j += cell_inflation_radius_;
 
+  //保证区域在地图的范围内
   min_i = std::max(0, min_i);
   min_j = std::max(0, min_j);
   max_i = std::min(int(size_x), max_i);
@@ -217,14 +233,16 @@ void InflationLayer::updateCosts(costmap_2d::Costmap2D& master_grid, int min_i, 
   // We use a map<distance, list> to emulate the priority queue used before, with a notable performance boost
 
   // Start with lethal obstacles: by definition distance is 0.0
+  //从致命障碍物开始：根据定义，距离为0.0
   std::vector<CellData>& obs_bin = inflation_cells_[0.0];
+
   for (int j = min_j; j < max_j; j++)
   {
     for (int i = min_i; i < max_i; i++)
     {
       int index = master_grid.getIndex(i, j);
-      unsigned char cost = master_array[index];
-      if (cost == LETHAL_OBSTACLE)
+      unsigned char cost = master_array[index];//获取栅格地图的栅格值
+      if (cost == LETHAL_OBSTACLE)//254//只有保存障碍物的点//因为只有对障碍点进行膨胀
       {
         obs_bin.push_back(CellData(index, i, j, i, j));
       }
@@ -233,6 +251,7 @@ void InflationLayer::updateCosts(costmap_2d::Costmap2D& master_grid, int min_i, 
 
   // Process cells by increasing distance; new cells are appended to the corresponding distance bin, so they
   // can overtake previously inserted but farther away cells
+
   std::map<double, std::vector<CellData> >::iterator bin;
   for (bin = inflation_cells_.begin(); bin != inflation_cells_.end(); ++bin)
   {
@@ -258,12 +277,15 @@ void InflationLayer::updateCosts(costmap_2d::Costmap2D& master_grid, int min_i, 
 
       // assign the cost associated with the distance from an obstacle to the cell
       unsigned char cost = costLookup(mx, my, sx, sy);
+
       unsigned char old_cost = master_array[index];
+
       if (old_cost == NO_INFORMATION && (inflate_unknown_ ? (cost > FREE_SPACE) : (cost >= INSCRIBED_INFLATED_OBSTACLE)))
         master_array[index] = cost;
       else
         master_array[index] = std::max(old_cost, cost);
 
+      //将障碍点的四周放进容器中
       // attempt to put the neighbors of the current cell onto the inflation list
       if (mx > 0)
         enqueue(index - 1, mx - 1, my, sx, sy);
@@ -275,7 +297,6 @@ void InflationLayer::updateCosts(costmap_2d::Costmap2D& master_grid, int min_i, 
         enqueue(index + size_x, mx, my + 1, sx, sy);
     }
   }
-
   inflation_cells_.clear();
 }
 
@@ -297,7 +318,7 @@ inline void InflationLayer::enqueue(unsigned int index, unsigned int mx, unsigne
     double distance = distanceLookup(mx, my, src_x, src_y);
 
     // we only want to put the cell in the list if it is within the inflation radius of the obstacle point
-    if (distance > cell_inflation_radius_)
+    if (distance > cell_inflation_radius_) //当距离大于膨胀的距离，不考虑进行膨胀，直接返回
       return;
 
     // push the cell data onto the inflation list and mark
@@ -324,7 +345,7 @@ void InflationLayer::computeCaches()
       cached_distances_[i] = new double[cell_inflation_radius_ + 2];
       for (unsigned int j = 0; j <= cell_inflation_radius_ + 1; ++j)
       {
-        cached_distances_[i][j] = hypot(i, j);
+        cached_distances_[i][j] = hypot(i, j);//平方根距离
       }
     }
 
@@ -335,7 +356,7 @@ void InflationLayer::computeCaches()
   {
     for (unsigned int j = 0; j <= cell_inflation_radius_ + 1; ++j)
     {
-      cached_costs_[i][j] = computeCost(cached_distances_[i][j]);
+      cached_costs_[i][j] = computeCost(cached_distances_[i][j]);//利用指数函数计算距离
     }
   }
 }

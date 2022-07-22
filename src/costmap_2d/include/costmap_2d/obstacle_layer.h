@@ -58,7 +58,8 @@
 
 namespace costmap_2d
 {
-
+//障碍物地图层
+//CostmapLayer继承Layer和CostMap2D
 class ObstacleLayer : public CostmapLayer
 {
 public:
@@ -67,16 +68,17 @@ public:
     costmap_ = NULL;  // this is the unsigned char* member of parent class Costmap2D.
   }
 
-  virtual ~ObstacleLayer();
-  virtual void onInitialize();
+  virtual ~ObstacleLayer();//虚拟析构函数，因为Layer和CostMap2D的析构函数是virtual
+  virtual void onInitialize();//继承Layer函数
   virtual void updateBounds(double robot_x, double robot_y, double robot_yaw, double* min_x, double* min_y,
-                            double* max_x, double* max_y);
-  virtual void updateCosts(costmap_2d::Costmap2D& master_grid, int min_i, int min_j, int max_i, int max_j);
+                            double* max_x, double* max_y);//继承Layer函数
+  virtual void updateCosts(costmap_2d::Costmap2D& master_grid, int min_i, int min_j, int max_i, int max_j);//继承Layer函数
 
-  virtual void activate();
-  virtual void deactivate();
-  virtual void reset();
+  virtual void activate();//继承Layer函数
+  virtual void deactivate();//继承Layer函数
+  virtual void reset();//继承Layer函数
 
+  //激光雷达有两种数据格式：扫描数据和点云数据，这两种数据都可以用来更新栅格地图
   /**
    * @brief  A callback to handle buffering LaserScan messages
    * @param message The message returned from a message notifier
@@ -114,6 +116,7 @@ public:
   void clearStaticObservations(bool marking, bool clearing);
 
 protected:
+  //启动动态配置参数
   virtual void setupDynamicReconfigure(ros::NodeHandle& nh);
 
   /**
@@ -121,6 +124,7 @@ protected:
    * @param marking_observations A reference to a vector that will be populated with the observations
    * @return True if all the observation buffers are current, false otherwise
    */
+  //获取用于标记空间的观察值
   bool getMarkingObservations(std::vector<costmap_2d::Observation>& marking_observations) const;
 
   /**
@@ -128,6 +132,7 @@ protected:
    * @param clearing_observations A reference to a vector that will be populated with the observations
    * @return True if all the observation buffers are current, false otherwise
    */
+  //获取用于清除空间的观察值
   bool getClearingObservations(std::vector<costmap_2d::Observation>& clearing_observations) const;
 
   /**
@@ -138,24 +143,30 @@ protected:
    * @param max_x
    * @param max_y
    */
+  //基于一次观察清除自由空间
   virtual void raytraceFreespace(const costmap_2d::Observation& clearing_observation, double* min_x, double* min_y,
                                  double* max_x, double* max_y);
-
+  //
   void updateRaytraceBounds(double ox, double oy, double wx, double wy, double range, double* min_x, double* min_y,
                             double* max_x, double* max_y);
 
-  std::vector<geometry_msgs::Point> transformed_footprint_;
-  bool footprint_clearing_enabled_;
+
+  std::vector<geometry_msgs::Point> transformed_footprint_;//机器人底盘位置
+  bool footprint_clearing_enabled_;//是否清除机器人底盘位置数据
+
+  //更新机器人底盘位置数据
   void updateFootprint(double robot_x, double robot_y, double robot_yaw, double* min_x, double* min_y, 
                        double* max_x, double* max_y);
-
-  std::string global_frame_;  ///< @brief The global frame for the costmap
-  double max_obstacle_height_;  ///< @brief Max Obstacle Height
-
-  laser_geometry::LaserProjection projector_;  ///< @brief Used to project laser scans into point clouds
-
+  ///< @brief The global frame for the costmap
+  std::string global_frame_;//代价地图使用坐标系统的名称
+  ///< @brief Max Obstacle Height
+  double max_obstacle_height_;//障碍物的最大高度
+  ///< @brief Used to project laser scans into point clouds
+  laser_geometry::LaserProjection projector_;//用于将激光扫描投影到点云中
+  //消息过滤器
   std::vector<boost::shared_ptr<message_filters::SubscriberBase> > observation_subscribers_;  ///< @brief Used for the observation message filters
   std::vector<boost::shared_ptr<tf2_ros::MessageFilterBase> > observation_notifiers_;  ///< @brief Used to make sure that transforms are available for each sensor
+  //保存观测值的缓冲区
   std::vector<boost::shared_ptr<costmap_2d::ObservationBuffer> > observation_buffers_;  ///< @brief Used to store observations from various sensors
   std::vector<boost::shared_ptr<costmap_2d::ObservationBuffer> > marking_buffers_;  ///< @brief Used to store observation buffers used for marking obstacles
   std::vector<boost::shared_ptr<costmap_2d::ObservationBuffer> > clearing_buffers_;  ///< @brief Used to store observation buffers used for clearing obstacles
@@ -163,13 +174,14 @@ protected:
   // Used only for testing purposes
   std::vector<costmap_2d::Observation> static_clearing_observations_, static_marking_observations_;
 
-  bool rolling_window_;
-  dynamic_reconfigure::Server<costmap_2d::ObstaclePluginConfig> *dsrv_;
+  bool rolling_window_;//是否基于滑动窗口更新地图数据
 
-  int combination_method_;
+  dynamic_reconfigure::Server<costmap_2d::ObstaclePluginConfig> *dsrv_;//动态配置参数服务器
+
+  int combination_method_;//采用覆盖主地图还是以最大值修改更新主地图的值，配置地图融合的方式
 
 private:
-  void reconfigureCB(costmap_2d::ObstaclePluginConfig &config, uint32_t level);
+  void reconfigureCB(costmap_2d::ObstaclePluginConfig &config, uint32_t level);//动态配置参数服务器的回调函数
 };
 
 }  // namespace costmap_2d

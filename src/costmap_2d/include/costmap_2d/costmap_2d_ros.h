@@ -50,6 +50,7 @@
 #include <pluginlib/class_loader.hpp>
 #include <tf2/LinearMath/Transform.h>
 
+//获取配置参数
 class SuperValue : public XmlRpc::XmlRpcValue
 {
 public:
@@ -87,28 +88,34 @@ public:
    * updates, can be called to restart the costmap after calls to either
    * stop() or pause()
    */
+  //启动代价地图，包括初始化、订阅传感器数据等
   void start();
 
   /**
    * @brief  Stops costmap updates and unsubscribes from sensor topics
    */
+  //停止更新代价地图
   void stop();
 
   /**
    * @brief  Stops the costmap from updating, but sensor data still comes in over the wire
    */
+  //暂停更新代价地图
   void pause();
 
   /**
    * @brief  Resumes costmap updates
    */
+  //继续更新代价地图
   void resume();
 
+  //更新代价地图数据
   void updateMap();
 
   /**
    * @brief Reset each individual layer
    */
+  //重置每个地图层
   void resetLayers();
 
   /** @brief Same as getLayeredCostmap()->isCurrent(). */
@@ -122,15 +129,18 @@ public:
    * @param global_pose Will be set to the pose of the robot in the global frame of the costmap
    * @return True if the pose was set successfully, false otherwise
    */
+  //获取机器人当前的位姿
   bool getRobotPose(geometry_msgs::PoseStamped& global_pose) const;
 
   /** @brief Returns costmap name */
+  //获取代价地图的名称
   std::string getName() const
     {
       return name_;
     }
 
   /** @brief Returns the delay in transform (tf) data that is tolerable in seconds */
+  //获取坐标变换可容忍延迟的时间
   double getTransformTolerance() const
     {
       return transform_tolerance_;
@@ -139,6 +149,7 @@ public:
   /** @brief Return a pointer to the "master" costmap which receives updates from all the layers.
    *
    * Same as calling getLayeredCostmap()->getCostmap(). */
+  //获取代价地图
   Costmap2D* getCostmap()
     {
       return layered_costmap_->getCostmap();
@@ -148,6 +159,7 @@ public:
    * @brief  Returns the global frame of the costmap
    * @return The global frame of the costmap
    */
+  //获取代价地图的坐标系名称
   std::string getGlobalFrameID()
     {
       return global_frame_;
@@ -157,16 +169,19 @@ public:
    * @brief  Returns the local frame of the costmap
    * @return The local frame of the costmap
    */
+  //获取机器人机身坐标系的名称
   std::string getBaseFrameID()
     {
       return robot_base_frame_;
     }
+  //获取代价地图层管理器，其管理碰撞层、静态层等
   LayeredCostmap* getLayeredCostmap()
     {
       return layered_costmap_;
     }
 
   /** @brief Returns the current padded footprint as a geometry_msgs::Polygon. */
+  //获取机器人当前底盘的形状
   geometry_msgs::Polygon getRobotFootprintPolygon()
   {
     return costmap_2d::toPolygon(padded_footprint_);
@@ -180,6 +195,7 @@ public:
    * The footprint initially comes from the rosparam "footprint" but
    * can be overwritten by dynamic reconfigure or by messages received
    * on the "footprint" topic. */
+  //获取机器人底盘位置数据（填充）
   std::vector<geometry_msgs::Point> getRobotFootprint()
   {
     return padded_footprint_;
@@ -192,6 +208,7 @@ public:
    * The footprint initially comes from the rosparam "footprint" but
    * can be overwritten by dynamic reconfigure or by messages received
    * on the "footprint" topic. */
+  //获取机器人底盘位置数据 无填充，原始数据
   std::vector<geometry_msgs::Point> getUnpaddedRobotFootprint()
   {
     return unpadded_footprint_;
@@ -201,6 +218,7 @@ public:
    * @brief  Build the oriented footprint of the robot at the robot's current pose
    * @param  oriented_footprint Will be filled with the points in the oriented footprint of the robot
    */
+  //在机器人的当前位姿下构建机器人的定向足迹
   void getOrientedFootprint(std::vector<geometry_msgs::Point>& oriented_footprint) const;
 
   /** @brief Set the footprint of the robot to be the given set of
@@ -213,6 +231,7 @@ public:
    * layered_costmap_->setFootprint().  Also saves the unpadded
    * footprint, which is available from
    * getUnpaddedRobotFootprint(). */
+  //通过给定的填充点构建机器人底盘位置数据
   void setUnpaddedRobotFootprint(const std::vector<geometry_msgs::Point>& points);
 
   /** @brief Set the footprint of the robot to be the given polygon,
@@ -225,11 +244,12 @@ public:
    * layered_costmap_->setFootprint().  Also saves the unpadded
    * footprint, which is available from
    * getUnpaddedRobotFootprint(). */
+  //根据给定的几何形状构建机器人的底盘位置数据
   void setUnpaddedRobotFootprintPolygon(const geometry_msgs::Polygon& footprint);
 
 protected:
-  LayeredCostmap* layered_costmap_;
-  std::string name_;
+  LayeredCostmap* layered_costmap_;//代价地图的层管理器
+  std::string name_;               //代价地图的名称
   tf2_ros::Buffer& tf_;  ///< @brief Used for transforming point clouds
   std::string global_frame_;  ///< @brief The global frame for the costmap
   std::string robot_base_frame_;  ///< @brief The frame_id of the robot base
@@ -240,12 +260,16 @@ private:
    *
    * If the values of footprint and robot_radius are the same in
    * new_config and old_config, nothing is changed. */
+  //从新的配置数据中设置机器人底盘位置数据
   void readFootprintFromConfig(const costmap_2d::Costmap2DConfig &new_config,
                                const costmap_2d::Costmap2DConfig &old_config);
-
+  //加载旧的参数
   void loadOldParameters(ros::NodeHandle& nh);
+  //请求旧的参数数据
   void warnForOldParameters(ros::NodeHandle& nh);
+  //检查就的参数数据
   void checkOldParam(ros::NodeHandle& nh, const std::string &param_name);
+
   void copyParentParameters(const std::string& plugin_name, const std::string& plugin_type, ros::NodeHandle& nh);
   void reconfigureCB(costmap_2d::Costmap2DConfig &config, uint32_t level);
   void movementCB(const ros::TimerEvent &event);

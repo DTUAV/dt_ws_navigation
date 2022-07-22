@@ -44,9 +44,9 @@
 
 PLUGINLIB_EXPORT_CLASS(costmap_2d::StaticLayer, costmap_2d::Layer)
 
-using costmap_2d::NO_INFORMATION;
-using costmap_2d::LETHAL_OBSTACLE;
-using costmap_2d::FREE_SPACE;
+using costmap_2d::NO_INFORMATION; //没有信息
+using costmap_2d::LETHAL_OBSTACLE;//极端点
+using costmap_2d::FREE_SPACE;//空闲区域
 
 namespace costmap_2d
 {
@@ -64,19 +64,19 @@ void StaticLayer::onInitialize()
   ros::NodeHandle nh("~/" + name_), g_nh;
   current_ = true;
 
-  global_frame_ = layered_costmap_->getGlobalFrameID();
+  global_frame_ = layered_costmap_->getGlobalFrameID();//代价地图的全局坐标系名称
 
   std::string map_topic;
-  nh.param("map_topic", map_topic, std::string("map"));
+  nh.param("map_topic", map_topic, std::string("map"));//获取地图数据的话题名称
   nh.param("first_map_only", first_map_only_, false);
-  nh.param("subscribe_to_updates", subscribe_to_updates_, false);
+  nh.param("subscribe_to_updates", subscribe_to_updates_, false);//是否订阅去更新
 
-  nh.param("track_unknown_space", track_unknown_space_, true);
+  nh.param("track_unknown_space", track_unknown_space_, true);//是否跟踪未知区域
   nh.param("use_maximum", use_maximum_, false);
 
   int temp_lethal_threshold, temp_unknown_cost_value;
-  nh.param("lethal_cost_threshold", temp_lethal_threshold, int(100));
-  nh.param("unknown_cost_value", temp_unknown_cost_value, int(-1));
+  nh.param("lethal_cost_threshold", temp_lethal_threshold, int(100));//极端情况下的代价阈值
+  nh.param("unknown_cost_value", temp_unknown_cost_value, int(-1));//未知区域的代价
   nh.param("trinary_costmap", trinary_costmap_, true);
 
   lethal_threshold_ = std::max(std::min(temp_lethal_threshold, 100), 0);
@@ -203,7 +203,7 @@ void StaticLayer::incomingMap(const nav_msgs::OccupancyGridConstPtr& new_map)
     for (unsigned int j = 0; j < size_x; ++j)
     {
       unsigned char value = new_map->data[index];
-      costmap_[index] = interpretValue(value);
+      costmap_[index] = interpretValue(value);//////////////////////////////
       ++index;
     }
   }

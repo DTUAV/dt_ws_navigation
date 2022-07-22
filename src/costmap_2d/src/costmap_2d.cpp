@@ -44,16 +44,17 @@ namespace costmap_2d
 {
 Costmap2D::Costmap2D(unsigned int cells_size_x, unsigned int cells_size_y, double resolution,
                      double origin_x, double origin_y, unsigned char default_value) :
-    size_x_(cells_size_x), size_y_(cells_size_y), resolution_(resolution), origin_x_(origin_x),
-    origin_y_(origin_y), costmap_(NULL), default_value_(default_value)
+  size_x_(cells_size_x), size_y_(cells_size_y), resolution_(resolution), origin_x_(origin_x),
+  origin_y_(origin_y), costmap_(NULL), default_value_(default_value)
 {
-  access_ = new mutex_t();
+  access_ = new mutex_t();//动态分配，析构函数中需要回收
 
   // create the costmap
-  initMaps(size_x_, size_y_);
-  resetMaps();
+  initMaps(size_x_, size_y_);//释放之前开辟保存代价地图的内存，重新开辟一段内存
+  resetMaps();//在新开辟的代价地图数据内存上初始化默认值
 }
 
+//释放开辟的代价地图空间并将指向代价地图的指针置为NULL
 void Costmap2D::deleteMaps()
 {
   // clean up data
@@ -62,11 +63,12 @@ void Costmap2D::deleteMaps()
   costmap_ = NULL;
 }
 
+
 void Costmap2D::initMaps(unsigned int size_x, unsigned int size_y)
 {
   boost::unique_lock<mutex_t> lock(*access_);
   delete[] costmap_;
-  costmap_ = new unsigned char[size_x * size_y];
+  costmap_ = new unsigned char[size_x * size_y];//开辟一段空间保存代价地图的数据
 }
 
 void Costmap2D::resizeMap(unsigned int size_x, unsigned int size_y, double resolution,
@@ -90,14 +92,17 @@ void Costmap2D::resetMaps()
   memset(costmap_, default_value_, size_x_ * size_y_ * sizeof(unsigned char));
 }
 
+
+//将地图指定范围的区域恢复到默认值
 void Costmap2D::resetMap(unsigned int x0, unsigned int y0, unsigned int xn, unsigned int yn)
 {
   boost::unique_lock<mutex_t> lock(*(access_));
   unsigned int len = xn - x0;
   for (unsigned int y = y0 * size_x_ + x0; y < yn * size_x_ + x0; y += size_x_)
-    memset(costmap_ + y, default_value_, len * sizeof(unsigned char));
+    memset(costmap_ + y, default_value_, len * sizeof(unsigned char));//一行一行赋初值
 }
 
+//复制另一代价地图的指定窗口作为本地的代价地图
 bool Costmap2D::copyCostmapWindow(const Costmap2D& map, double win_origin_x, double win_origin_y, double win_size_x,
                                   double win_size_y)
 {
@@ -134,6 +139,7 @@ bool Costmap2D::copyCostmapWindow(const Costmap2D& map, double win_origin_x, dou
   return true;
 }
 
+//赋值构造函数
 Costmap2D& Costmap2D::operator=(const Costmap2D& map)
 {
   // check for self assignement
@@ -158,8 +164,9 @@ Costmap2D& Costmap2D::operator=(const Costmap2D& map)
   return *this;
 }
 
+//拷贝构造函数
 Costmap2D::Costmap2D(const Costmap2D& map) :
-    costmap_(NULL)
+  costmap_(NULL)
 {
   access_ = new mutex_t();
   *this = map;
@@ -167,7 +174,7 @@ Costmap2D::Costmap2D(const Costmap2D& map) :
 
 // just initialize everything to NULL by default
 Costmap2D::Costmap2D() :
-    size_x_(0), size_y_(0), resolution_(0.0), origin_x_(0.0), origin_y_(0.0), costmap_(NULL)
+  size_x_(0), size_y_(0), resolution_(0.0), origin_x_(0.0), origin_y_(0.0), costmap_(NULL)
 {
   access_ = new mutex_t();
 }
@@ -178,6 +185,7 @@ Costmap2D::~Costmap2D()
   delete access_;
 }
 
+//栅格的距离和世界坐标系下距离差一个分辨率
 unsigned int Costmap2D::cellDistance(double world_dist)
 {
   double cells_dist = max(0.0, ceil(world_dist / resolution_));

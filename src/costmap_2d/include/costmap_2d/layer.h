@@ -45,7 +45,7 @@
 namespace costmap_2d
 {
 class LayeredCostmap;
-
+//层的基类
 class Layer
 {
 public:
@@ -61,6 +61,7 @@ public:
    * For more details, see "Layered Costmaps for Context-Sensitive Navigation",
    * by Lu et. Al, IROS 2014.
    */
+  //更新边界
   virtual void updateBounds(double robot_x, double robot_y, double robot_yaw, double* min_x, double* min_y,
                             double* max_x, double* max_y) {}
 
@@ -68,6 +69,7 @@ public:
    * @brief Actually update the underlying costmap, only within the bounds
    *        calculated during UpdateBounds().
    */
+  //更新指定区域的代价
   virtual void updateCosts(Costmap2D& master_grid, int min_i, int min_j, int max_i, int max_j) {}
 
   /** @brief Stop publishers. */
@@ -90,25 +92,30 @@ public:
    *        variable current_.
    * @return Whether the data in the layer is up to date.
    */
+  //检查是否是当前的代价
   bool isCurrent() const
   {
     return current_;
   }
 
   /** @brief Implement this to make this layer match the size of the parent costmap. */
+  //与父代价地图保持同样大小
   virtual void matchSize() {}
 
+  //获取代价地图层的名称
   std::string getName() const
   {
     return name_;
   }
 
   /** @brief Convenience function for layered_costmap_->getFootprint(). */
+  //获取当前机器人底盘在地图中的位置
   const std::vector<geometry_msgs::Point>& getFootprint() const;
 
   /** @brief LayeredCostmap calls this whenever the footprint there
    * changes (via LayeredCostmap::setFootprint()).  Override to be
    * notified of changes to the robot's footprint. */
+  //在机器人位姿改变时会调用这个函数
   virtual void onFootprintChanged() {}
 
 protected:
@@ -118,14 +125,14 @@ protected:
    * tf_, name_, and layered_costmap_ will all be set already when this is called. */
   virtual void onInitialize() {}
 
-  LayeredCostmap* layered_costmap_;
-  bool current_;
-  bool enabled_;  ///< Currently this var is managed by subclasses. TODO: make this managed by this class and/or container class.
-  std::string name_;
-  tf2_ros::Buffer *tf_;
+  LayeredCostmap* layered_costmap_;//管理代价地图的基类
+  bool current_;//当前地图代价是否最新的
+  bool enabled_;//是否启用这个层  ///< Currently this var is managed by subclasses. TODO: make this managed by this class and/or container class.
+  std::string name_;//地图层的名称
+  tf2_ros::Buffer *tf_;//坐标变换
 
 private:
-  std::vector<geometry_msgs::Point> footprint_spec_;
+  std::vector<geometry_msgs::Point> footprint_spec_;//机器人底盘的在地图中的数据,根据这些点去判断机器人与环境障碍物是否相撞
 };
 
 }  // namespace costmap_2d

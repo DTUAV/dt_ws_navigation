@@ -55,15 +55,16 @@ class StaticLayer : public CostmapLayer
 public:
   StaticLayer();
   virtual ~StaticLayer();
-  virtual void onInitialize();
-  virtual void activate();
-  virtual void deactivate();
-  virtual void reset();
-
+  virtual void onInitialize();//继承Layer函数
+  virtual void activate();//继承Layer函数
+  virtual void deactivate();//继承Layer函数
+  virtual void reset();//继承Layer函数
+  //继承Layer函数
   virtual void updateBounds(double robot_x, double robot_y, double robot_yaw, double* min_x, double* min_y,
                             double* max_x, double* max_y);
+  //继承Layer函数
   virtual void updateCosts(costmap_2d::Costmap2D& master_grid, int min_i, int min_j, int max_i, int max_j);
-
+  //继承Layer函数
   virtual void matchSize();
 
 private:
@@ -73,14 +74,16 @@ private:
    * map along with its size will determine what parts of the costmap's
    * static map are overwritten.
    */
-  void incomingMap(const nav_msgs::OccupancyGridConstPtr& new_map);
+  void incomingMap(const nav_msgs::OccupancyGridConstPtr& new_map);//来自map_server的地图
   void incomingUpdate(const map_msgs::OccupancyGridUpdateConstPtr& update);
-  void reconfigureCB(costmap_2d::GenericPluginConfig &config, uint32_t level);
+
+  void reconfigureCB(costmap_2d::GenericPluginConfig &config, uint32_t level);//动态配置参数的回调函数
 
   unsigned char interpretValue(unsigned char value);
 
   std::string global_frame_;  ///< @brief The global frame for the costmap
   std::string map_frame_;  /// @brief frame that map is located in
+
   bool subscribe_to_updates_;
   bool map_received_;
   bool has_updated_data_;

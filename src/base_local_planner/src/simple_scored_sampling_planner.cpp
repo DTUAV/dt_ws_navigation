@@ -109,6 +109,7 @@ bool SimpleScoredSamplingPlanner::findBestTrajectory(Trajectory& traj, std::vect
     //获取生成的轨迹
     TrajectorySampleGenerator* gen_ = *loop_gen;
 
+    //一直循环获取生成的轨迹
     while (gen_->hasMoreTrajectories()) {
       gen_success = gen_->nextTrajectory(loop_traj);
       if (gen_success == false) {
@@ -135,6 +136,7 @@ bool SimpleScoredSamplingPlanner::findBestTrajectory(Trajectory& traj, std::vect
         break;
       }
     }
+    //单个轨迹生成器遍历完后，保存最优的轨迹作为机器人的目标轨迹
     if (best_traj_cost >= 0) {
       traj.xv_ = best_traj.xv_;
       traj.yv_ = best_traj.yv_;

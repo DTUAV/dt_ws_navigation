@@ -52,6 +52,7 @@ class Layer;
  * @class LayeredCostmap
  * @brief Instantiates different layer plugins and aggregates them into one score
  */
+//实例化不同的层插件并将其聚合为一个代价//带有代价地图的地图层
 class LayeredCostmap
 {
 public:
@@ -69,16 +70,19 @@ public:
    * @brief  Update the underlying costmap with new data.
    * If you want to update the map outside of the update loop that runs, you can call this.
    */
+  //根据机器人的位置更新地图
   void updateMap(double robot_x, double robot_y, double robot_yaw);
 
+  //获取全局坐标系的名称
   std::string getGlobalFrameID() const
   {
     return global_frame_;
   }
-
+  //调整地图的大小
   void resizeMap(unsigned int size_x, unsigned int size_y, double resolution, double origin_x, double origin_y,
                  bool size_locked = false);
 
+  //获取代价地图更新的区域
   void getUpdatedBounds(double& minx, double& miny, double& maxx, double& maxy)
   {
     minx = minx_;
@@ -89,36 +93,42 @@ public:
 
   bool isCurrent();
 
+  //获取代价地图
   Costmap2D* getCostmap()
   {
     return &costmap_;
   }
-
+  //代价地图是否跟随机器人运动
   bool isRolling()
   {
     return rolling_window_;
   }
 
+  //是否当前代价地图的默认值是没有信息
   bool isTrackingUnknown()
   {
     return costmap_.getDefaultValue() == costmap_2d::NO_INFORMATION;
   }
 
+  //返回所有地图层的共享指针
   std::vector<boost::shared_ptr<Layer> >* getPlugins()
   {
     return &plugins_;
   }
 
+  //添加一个地图层
   void addPlugin(boost::shared_ptr<Layer> plugin)
   {
     plugins_.push_back(plugin);
   }
 
+  //该地图层是否固定大小
   bool isSizeLocked()
   {
     return size_locked_;
   }
 
+  //获取地图的边界
   void getBounds(unsigned int* x0, unsigned int* xn, unsigned int* y0, unsigned int* yn)
   {
     *x0 = bx0_;
@@ -127,6 +137,7 @@ public:
     *yn = byn_;
   }
 
+  //是否已经初始化
   bool isInitialized()
   {
       return initialized_;
@@ -135,9 +146,11 @@ public:
   /** @brief Updates the stored footprint, updates the circumscribed
    * and inscribed radii, and calls onFootprintChanged() in all
    * layers. */
+  //设置机器人底盘的位置
   void setFootprint(const std::vector<geometry_msgs::Point>& footprint_spec);
 
   /** @brief Returns the latest footprint stored with setFootprint(). */
+  //获取机器人底盘的位置数据
   const std::vector<geometry_msgs::Point>& getFootprint() { return footprint_; }
 
   /** @brief The radius of a circle centered at the origin of the
@@ -145,6 +158,7 @@ public:
    * footprint.
    *
    * This is updated by setFootprint(). */
+  //获取机器人底盘外圆的半径
   double getCircumscribedRadius() { return circumscribed_radius_; }
 
   /** @brief The radius of a circle centered at the origin of the
@@ -152,23 +166,28 @@ public:
    * footprint.
    *
    * This is updated by setFootprint(). */
+  //获取机器人内圆的半径
   double getInscribedRadius() { return inscribed_radius_; }
 
 private:
-  Costmap2D costmap_;
-  std::string global_frame_;
-
+  Costmap2D costmap_;//代价地图
+  std::string global_frame_;//全局坐标系
+  //代价地图是否和跟随机器人滚动
   bool rolling_window_;  /// < @brief Whether or not the costmap should roll with the robot
 
   bool current_;
+  //更新的区域
   double minx_, miny_, maxx_, maxy_;
+  //地图边界
   unsigned int bx0_, bxn_, by0_, byn_;
 
   std::vector<boost::shared_ptr<Layer> > plugins_;
 
-  bool initialized_;
-  bool size_locked_;
+  bool initialized_;//是否已经初始化
+  bool size_locked_;//是否固定地图大小
+  //机器人底盘的内接圆半径和外接圆半径
   double circumscribed_radius_, inscribed_radius_;
+  //机器人底盘的位置点
   std::vector<geometry_msgs::Point> footprint_;
 };
 
