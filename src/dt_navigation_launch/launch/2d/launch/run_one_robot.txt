@@ -1,0 +1,2 @@
+roslaunch dt_sim_one_robot.launch
+roslaunch dt_one_robot_navigation.launch

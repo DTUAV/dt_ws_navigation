@@ -267,32 +267,36 @@ private:
   void loadOldParameters(ros::NodeHandle& nh);
   //请求旧的参数数据
   void warnForOldParameters(ros::NodeHandle& nh);
-  //检查就的参数数据
+  //检查旧的参数数据
   void checkOldParam(ros::NodeHandle& nh, const std::string &param_name);
-
+  //从基类中复制参数数据
   void copyParentParameters(const std::string& plugin_name, const std::string& plugin_type, ros::NodeHandle& nh);
+  //动态参数配置回调函数
   void reconfigureCB(costmap_2d::Costmap2DConfig &config, uint32_t level);
+  //运动的回调函数
   void movementCB(const ros::TimerEvent &event);
+  //地图更新的主线程
   void mapUpdateLoop(double frequency);
-  bool map_update_thread_shutdown_;
-  bool stop_updates_, initialized_, stopped_, robot_stopped_;
-  boost::thread* map_update_thread_;  ///< @brief A thread for updating the map
-  ros::Timer timer_;
-  ros::Time last_publish_;
-  ros::Duration publish_cycle;
-  pluginlib::ClassLoader<Layer> plugin_loader_;
-  geometry_msgs::PoseStamped old_pose_;
-  Costmap2DPublisher* publisher_;
-  dynamic_reconfigure::Server<costmap_2d::Costmap2DConfig> *dsrv_;
 
-  boost::recursive_mutex configuration_mutex_;
+  bool map_update_thread_shutdown_;//是否关闭地图更新的主线程
+  bool stop_updates_, initialized_, stopped_, robot_stopped_;//停止地图更新、初始化、停止、停止机器人运动
+  boost::thread* map_update_thread_;  ///< @brief A thread for updating the map//地图更新的线程
+  ros::Timer timer_;//定时器
+  ros::Time last_publish_;//上一次发布的时间
+  ros::Duration publish_cycle;//发布的周期
+  pluginlib::ClassLoader<Layer> plugin_loader_;//各个地图层的插件导入器
+  geometry_msgs::PoseStamped old_pose_;//上一帧机器人的位姿
+  Costmap2DPublisher* publisher_;//代价地图发布器
+  dynamic_reconfigure::Server<costmap_2d::Costmap2DConfig> *dsrv_;//动态更新参数的服务器
 
-  ros::Subscriber footprint_sub_;
-  ros::Publisher footprint_pub_;
-  std::vector<geometry_msgs::Point> unpadded_footprint_;
-  std::vector<geometry_msgs::Point> padded_footprint_;
+  boost::recursive_mutex configuration_mutex_;//线程互斥锁
+
+  ros::Subscriber footprint_sub_;//机器人底盘位置的订阅器
+  ros::Publisher footprint_pub_;//机器人底盘数据的发布器
+  std::vector<geometry_msgs::Point> unpadded_footprint_;//未填充的机器人底盘数据
+  std::vector<geometry_msgs::Point> padded_footprint_;//填充的机器人底盘数据
   float footprint_padding_;
-  costmap_2d::Costmap2DConfig old_config_;
+  costmap_2d::Costmap2DConfig old_config_;//旧的配置参数
 };
 // class Costmap2DROS
 }  // namespace costmap_2d

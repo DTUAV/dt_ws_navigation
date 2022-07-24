@@ -1,0 +1,12 @@
+GlobalPlanner:
+  use_dijkstra: true   #true: dijkstra false: A*
+  use_grid_path: false #两种路径可以选择，true栅格路径和false梯度路径
+  use_quadratic: true  #使用线性一次函数计算势场还是采用二次函数
+  allow_unknown: true  #指定是否允许规划器创建穿越未知空间的规划
+  #planner_window_x: 1.0 #
+  #planner_window_y: 1.0 #
+  default_tolerance: 0.05 #规划器的目标点容差
+  publish_scale: 100 #
+  outline_map: true #
+  old_navfn_behavior: false #发布的路径和navfn包一致
+

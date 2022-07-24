@@ -234,6 +234,6 @@ namespace move_base {
       bool setup_, p_freq_change_, c_freq_change_;
       bool new_global_plan_;
   };
-};
+}
 #endif
 

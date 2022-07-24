@@ -1,0 +1,75 @@
+<launch>
+<node pkg="amcl" type="amcl" name="amcl" output="screen">
+
+ <!--地图相关参数-->
+ <param name = "first_map_only" value = "false" /> <!--是否只接收一帧地图数据，如果设置为true，则只接收地图数据一次，后面在地图的回调函数中都直接返回-->
+ <param name = "use_map_topic" value = "true"  /> <!--当这个设置为true时将使用下面的话题获取当前系统提供的地图数据-->
+ <param name = "map_topic_name" value = "/map" /> <!--接收地图数据的话题名称（自己添加）-->
+
+ <!--保存数据和可视化数据相关-->
+ <param name = "gui_publish_rate" value = "0.5" /> <!--发布可视化扫描和路径的最大速率（Hz），禁用-1.0-->
+ <param name = "save_pose_rate" value = "0.5" /> <!--在变量initial_pose_ 和initial_cov_ 中存储参数服务器的最后估计姿态和协方差的最大速率（Hz）。此保存的位姿将用于后续运行以初始化过滤器。-1.0禁用。-->
+ <param name = "std_warn_level_x" value = "0.2" /> <!--当x的偏差超出设置值就会警告-->
+ <param name = "std_warn_level_y" value = "0.2" /> <!--当y的偏差超出设置值就会警告-->
+ <param name = "std_warn_level_yaw" value = "0.1" /> <!--当yaw的偏差超出设置值就会警告-->
+ <param name = "bag_scan_period" value = "-1.0" /> <!--回放ros bag 的频率，-1.0是禁用-->
+
+ <!--激光雷达传感器模型相关-->
+ <param name = "scan_topic" value = "/tb3_0/scan" /> <!--激光雷达的数据话题名称-->
+ <param name = "laser_min_range" value = "-1.0" /> <!--要考虑的最小扫描范围, -1.0将默认使用激光器报告的最小范围-->
+ <param name = "laser_max_range" value = "-1.0" /> <!--要考虑的最大扫描范围, -1.0将默认使用激光器报告的最大范围-->
+ <param name = "laser_max_beams" value = "30" /> <!--在更新过滤器时要在每次扫描中使用多少均匀间隔的光束-->
+ <param name = "laser_z_hit" value = "0.95" /> <!--模型的z_hit部分的权重-->
+ <param name = "laser_z_short" value = "0.05" /> <!--模型的z_short部分的权重-->
+ <param name = "laser_z_max" value = "0.05" /> <!--模型的z_max部分的混合权重-->
+ <param name = "laser_z_rand" value = "0.05" /> <!--模型的z_rand部分的混合权重-->
+ <param name = "laser_sigma_hit" value = "0.2" /> <!--在模型的z_hit部分中使用的高斯模型的标准偏差-->
+ <param name = "laser_lambda_short" value = "0.1" /> <!--模型的z_short部分的指数衰减参数-->
+ <param name = "laser_likelihood_max_dist" value = "2.0" /> <!--在地图上做障碍物膨胀的最大距离-->
+ <param name = "laser_model_type" value = "likelihood_field" /> <!--激光雷达的概率模型类型 beam，likelihood_field或likelihood_field_prob-->
+ <param name = "do_beamskip" value = "false" />  <!--likelihood_field_prob模式才有效-->
+ <param name = "beam_skip_distance" value = "0.5" /> <!--likelihood_field_prob模式才有效-->
+ <param name = "beam_skip_threshold" value = "0.3" /> <!--likelihood_field_prob模式才有效-->
+ <param name = "beam_skip_error_threshold_" value = "0.9" /> <!--likelihood_field_prob模式才有效-->
+
+ <!--里程计模型相关-->
+ <param name = "odom_alpha1" value = "0.2" /> <!--根据机器人运动的旋转分量指定里程表旋转估计中的预期噪声-->
+ <param name = "odom_alpha2" value = "0.2" /> <!--根据机器人运动的平移分量，指定里程表旋转估计中的预期噪声-->
+ <param name = "odom_alpha3" value = "0.8" /> <!--从机器人运动的平移分量中指定odometry的平移估计中的预期噪声-->
+ <param name = "odom_alpha4" value = "0.2" /> <!--根据机器人运动的旋转分量指定odometry的平移估计中的预期噪声-->
+ <param name = "odom_alpha5" value = "0.2" /> <!--与平移相关的噪声参数（仅在模型为“omni”时使用）-->
+ <param name = "odom_model_type" value = "diff" /> <!--里程计概率模型 “diff”，“omni”，“diff-corrected”或“omni-corrected”-->
+
+ <!--粒子滤波器相关-->
+ <param name = "min_particles" value = "500" /> <!--最小允许的粒子的颗粒数-->
+ <param name = "max_particles" value = "5000" /> <!--允许的最大粒子颗数-->
+ <param name = "kld_err" value = "0.05" /> <!--真实分布和估计分布之间的最大误差-->
+ <param name = "kld_z" value = "0.99" /> <!--（1-p）的上标准正常分位数，其中p是估计的失谐上的误差将小于kld_err的概率-->
+ <param name = "update_min_d" value = "0.2" /> <!--执行滤波器更新之前需要执行平移运动-->
+ <param name = "update_min_a" value = "0.523" /> <!--执行滤波器更新之前需要执行旋转运动距离-->
+ <param name = "resample_interval" value = "1" /> <!--重新采样前所需的滤波器更新次数-->
+ <param name = "selective_resampling" value = "false" /> <!--是否使用选择性重采样-->
+ <param name = "transform_tolerance" value = "0.2" /> <!--转换有效时间，这个转换有效的时间间隔-->
+ <param name = "recovery_alpha_slow" value = "0.01" /><!--慢速平均权重滤波器的指数衰减率，用于决定何时通过添加随机位姿进行恢复。一个好的值可能是0.001。-->
+ <param name = "recovery_alpha_fast" value = "0.1" /> <!--快速平均权重滤波器的指数衰减率，用于决定何时通过添加随机位姿进行恢复。一个好的值可能是0.1。-->
+ <param name = "initial_pose_x" value = "-2.5" /> <!--初始位姿均值（x），用于初始化高斯分布的滤波器-->
+ <param name = "initial_pose_y" value = "-0.5" /> <!--初始位姿均值（y），用于初始化高斯分布的滤波器-->
+ <param name = "initial_pose_a" value = "0.0" /> <!--初始位姿均值（z），用于初始化高斯分布的滤波器-->
+ <param name = "initial_cov_xx" value = "0.25" /> <!--初始协方差（xx），用于初始化高斯分布的滤波器-->
+ <param name = "initial_cov_yy" value = "0.25" /> <!--初始协方差（yy），用于初始化高斯分布的滤波器-->
+ <param name = "initial_cov_aa" value = "0.06847" /> <!--初始协方差（zz），用于初始化高斯分布的滤波器-->
+ <param name = "initialpose_sub_topic" value = "/initialpose" /> <!--设置滤波器初始化位姿的话题名称（自己添加）-->
+ <param name = "amcl_pose_pub_topic" value = "/amcl_pose" /> <!--粒子滤波器发布的估计位姿信息的话题名称(自己添加)-->
+ <param name = "particlecloud_pub_topic" value = "/particlecloud" /> <!--粒子滤波器发布的粒子云信息话题名称（自己添加)-->
+ <param name = "global_localization_server" value = "/global_localization" /> <!--请求全局定位的服务话题名称 (自己添加)-->
+ <param name = "request_nomotion_update_server" value = "/request_nomotion_update" /> <!--请求在无运动情况下更新滤波器的服务话题名称 (自己添加)-->
+ <param name = "set_map_server" value = "/set_map" /> <!--设置地图的服务器名称（自己添加）-->
+
+ <!--坐标变换相关-->
+ <param name = "tf_broadcast" value = "true" /><!--将此值设置为false可防止amcl发布全局框架和odometry框架之间的变换-->
+ <param name = "odom_frame_id" value = "odom" /> <!--里程计坐标系名称-->
+ <param name = "base_frame_id" value = "base_link" /> <!--激光雷达设备的坐标系名称-->
+ <param name = "global_frame_id" value = "map" /> <!--地图坐标系的名称-->
+
+</node>
+</launch>

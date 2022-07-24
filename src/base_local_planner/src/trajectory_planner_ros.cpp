@@ -207,7 +207,7 @@ namespace base_local_planner {
       private_nh.param("oscillation_reset_dist", oscillation_reset_dist, 0.05);
       private_nh.param("escape_reset_dist", escape_reset_dist, 0.10);
       private_nh.param("escape_reset_theta", escape_reset_theta, M_PI_4);
-      private_nh.param("holonomic_robot", holonomic_robot, true);
+      private_nh.param("holonomic_robot", holonomic_robot, false);//
       private_nh.param("max_vel_x", max_vel_x, 0.5);
       private_nh.param("min_vel_x", min_vel_x, 0.1);
 

@@ -186,7 +186,7 @@ namespace base_local_planner {
     try{
       geometry_msgs::TransformStamped transform = tf.lookupTransform(global_frame, ros::Time(),
                          plan_goal_pose.header.frame_id, plan_goal_pose.header.stamp,
-                         plan_goal_pose.header.frame_id, ros::Duration(0.5));
+                         plan_goal_pose.header.frame_id, ros::Duration(0.5));//ros::Duration(0.5)
 
       tf2::doTransform(plan_goal_pose, goal_pose, transform);
     }

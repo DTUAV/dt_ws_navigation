@@ -115,8 +115,6 @@ angle_diff(double a, double b)
     return(d2);
 }
 
-static const std::string scan_topic_ = "scan";
-
 /* This function is only useful to have the whole code work
  * with old rosbags that have trailing slashes for their frames
  */
@@ -190,6 +188,8 @@ class AmclNode
     //parameter for what base to use
     std::string base_frame_id_;
     std::string global_frame_id_;
+
+    std::string scan_topic_;
 
     bool use_map_topic_;
     bool first_map_only_;
@@ -470,14 +470,30 @@ AmclNode::AmclNode() :
   tf_.reset(new tf2_ros::Buffer());
   tfl_.reset(new tf2_ros::TransformListener(*tf_));
 
-  pose_pub_ = nh_.advertise<geometry_msgs::PoseWithCovarianceStamped>("amcl_pose", 2, true);
-  particlecloud_pub_ = nh_.advertise<geometry_msgs::PoseArray>("particlecloud", 2, true);
-  global_loc_srv_ = nh_.advertiseService("global_localization", 
+  std::string amcl_pose_pub_topic = "/amcl_pose";
+  private_nh_.param<std::string>("amcl_pose_pub_topic", amcl_pose_pub_topic, "/amcl_pose");
+  pose_pub_ = nh_.advertise<geometry_msgs::PoseWithCovarianceStamped>(amcl_pose_pub_topic, 2, true);
+
+  std::string particlecloud_pub_topic = "/particlecloud";
+  private_nh_.param<std::string>("particlecloud_pub_topic", particlecloud_pub_topic, "/particlecloud");
+  particlecloud_pub_ = nh_.advertise<geometry_msgs::PoseArray>(particlecloud_pub_topic, 2, true);
+
+  std::string global_localization_server = "/global_localization";
+  private_nh_.param<std::string>("global_localization_server", global_localization_server, "/global_localization");
+  global_loc_srv_ = nh_.advertiseService(global_localization_server,
 					 &AmclNode::globalLocalizationCallback,
                                          this);
-  nomotion_update_srv_= nh_.advertiseService("request_nomotion_update", &AmclNode::nomotionUpdateCallback, this);
-  set_map_srv_= nh_.advertiseService("set_map", &AmclNode::setMapCallback, this);
 
+  std::string request_nomotion_update_server = "/request_nomotion_update";
+  private_nh_.param<std::string>("request_nomotion_update_server", request_nomotion_update_server, "/request_nomotion_update");
+  nomotion_update_srv_= nh_.advertiseService(request_nomotion_update_server, &AmclNode::nomotionUpdateCallback, this);
+
+  std::string set_map_server = "/set_map";
+  private_nh_.param<std::string>("set_map_server", set_map_server, "/set_map");
+  set_map_srv_= nh_.advertiseService(set_map_server, &AmclNode::setMapCallback, this);
+
+  std::string scan_topic_ = "/scan";
+  private_nh_.param<std::string>("scan_topic", scan_topic_, "/scan");
   laser_scan_sub_ = new message_filters::Subscriber<sensor_msgs::LaserScan>(nh_, scan_topic_, 100);
   laser_scan_filter_ = 
           new tf2_ros::MessageFilter<sensor_msgs::LaserScan>(*laser_scan_sub_,
@@ -487,10 +503,14 @@ AmclNode::AmclNode() :
                                                              nh_);
   laser_scan_filter_->registerCallback(boost::bind(&AmclNode::laserReceived,
                                                    this, _1));
-  initial_pose_sub_ = nh_.subscribe("initialpose", 2, &AmclNode::initialPoseReceived, this);
+  std::string initial_pose_topic = "/initialpose";
+  private_nh_.param<std::string>("initialpose_sub_topic", initial_pose_topic, "/initialpose");
+  initial_pose_sub_ = nh_.subscribe(initial_pose_topic, 2, &AmclNode::initialPoseReceived, this);
 
   if(use_map_topic_) {
-    map_sub_ = nh_.subscribe("map", 1, &AmclNode::mapReceived, this);
+    std::string map_topic_name = "/map";
+    private_nh_.param<std::string>("map_topic_name", map_topic_name, "/map");
+    map_sub_ = nh_.subscribe(map_topic_name, 1, &AmclNode::mapReceived, this);
     ROS_INFO("Subscribed to map topic.");
   } else {
     requestMap();

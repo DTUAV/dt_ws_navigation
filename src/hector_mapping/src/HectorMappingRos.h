@@ -104,6 +104,7 @@ public:
   /*
   void setStaticMapData(const nav_msgs::OccupancyGrid& map);
   */
+  void main_loop_fun(const ros::TimerEvent& event); //
 protected:
 
   HectorDebugInfoProvider* debugInfoProvider;
@@ -157,6 +158,11 @@ protected:
 
   bool pause_scan_processing_;
 
+  ros::Timer main_loop_timer;//
+  double main_loop_duration; //
+  sensor_msgs::LaserScan scan_msg;
+  bool is_new_scan;
+  bool is_init;
   //-----------------------------------------------------------
   // Parameters
 

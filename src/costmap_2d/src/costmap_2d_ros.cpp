@@ -85,8 +85,8 @@ Costmap2DROS::Costmap2DROS(const std::string& name, tf2_ros::Buffer& tf) :
   ros::NodeHandle g_nh;
 
   // get global and robot base frame names
-  private_nh.param("global_frame", global_frame_, std::string("map"));
-  private_nh.param("robot_base_frame", robot_base_frame_, std::string("base_link"));
+  private_nh.param("global_frame", global_frame_, std::string("map"));//地图坐标系名称
+  private_nh.param("robot_base_frame", robot_base_frame_, std::string("base_link"));//机器人位姿的坐标系名称
 
   ros::Time last_error = ros::Time::now();
   std::string tf_error;
@@ -432,7 +432,7 @@ void Costmap2DROS::movementCB(const ros::TimerEvent &event)
                                           new_pose.pose.orientation.w)) < 1e-3);
   }
 }
-
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Costmap2DROS::mapUpdateLoop(double frequency)
 {
   // the user might not want to run the loop every cycle

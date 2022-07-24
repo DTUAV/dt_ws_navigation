@@ -218,9 +218,13 @@ namespace dwa_local_planner {
     */
 
     //pass along drive commands
-    cmd_vel.linear.x = drive_cmds.pose.position.x;
-    cmd_vel.linear.y = drive_cmds.pose.position.y;
-    cmd_vel.angular.z = tf2::getYaw(drive_cmds.pose.orientation);
+    cmd_vel.linear.x = drive_cmds.pose.position.x;//
+    cmd_vel.linear.y = drive_cmds.pose.position.y;//
+    cmd_vel.angular.z = tf2::getYaw(drive_cmds.pose.orientation);//
+
+    //for simulation diff
+   // cmd_vel.linear.x = sqrt(drive_cmds.pose.position.x * drive_cmds.pose.position.x + drive_cmds.pose.position.y * drive_cmds.pose.position.y);
+  //cmd_vel.angular.z = tf2::getYaw(drive_cmds.pose.orientation);
 
     //if we cannot move... tell someone
     std::vector<geometry_msgs::PoseStamped> local_plan;
