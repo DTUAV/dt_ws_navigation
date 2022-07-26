@@ -1,5 +1,16 @@
 #include "../include/dt_global_planner/dijkstra_planner.h"
 
+void dijkstra_planner2d::config_map() {
+  cost_map.clear();
+  new_cost_map.clear();
+  cost_map.resize(map_size_x);
+  new_cost_map.resize(map_size_x);
+  for(int i = 0; i < map_size_y; ++i) {
+    cost_map[i].resize(map_size_y, un_know_cost);
+    new_cost_map[i].resize(map_size_y, POT_HIGH);
+  }
+}
+
 bool dijkstra_planner2d::get_path(path2d &path) {
   if(!is_get_path) {
 #ifdef DEBUG
@@ -48,44 +59,44 @@ bool dijkstra_planner2d::update_map() {
 #endif
     return false;
   }
-    data_need_vist.clear();
-    //reset_all_nodes();
-    long cur_iter = 0;
-    int start_index = start_pos.pos_x * start_pos.pos_y;
-    data_need_vist.push_back(all_nodes.at(start_index));
-    int target_index = target_pos.pos_x * target_pos.pos_y;
-    while(cur_iter <= max_iter_num && !data_need_vist.empty()) {
+  data_need_vist.clear();
+  //reset_all_nodes();
+  long cur_iter = 0;
+  int start_index = start_pos.pos_x * start_pos.pos_y;
+  data_need_vist.push_back(all_nodes.at(start_index));
+  int target_index = target_pos.pos_x * target_pos.pos_y;
+  while(cur_iter <= max_iter_num && !data_need_vist.empty()) {
 
-      path_node2d top = data_need_vist.front();
-      std::pop_heap(data_need_vist.begin(), data_need_vist.end(), greater1);//将第0个元素和最后一个元素交换位置，并对前n-1个元素进行从小到大排序。也就是第0个元素的代价是最小的
-      data_need_vist.pop_back();//最小代价的元素已经保存在top了，这里将这个元素从容器中弹出
+    path_node2d top = data_need_vist.front();
+    std::pop_heap(data_need_vist.begin(), data_need_vist.end(), greater1);//将第0个元素和最后一个元素交换位置，并对前n-1个元素进行从小到大排序。也就是第0个元素的代价是最小的
+    data_need_vist.pop_back();//最小代价的元素已经保存在top了，这里将这个元素从容器中弹出
 
-      int index = top.cur_x * top.cur_y;
-      all_nodes.at(index).is_visit = true;
-      all_nodes.at(index).cost = count_cost(cost_map.at(top.cur_x).at(top.cur_y));
+    int index = top.cur_x * top.cur_y;
+    all_nodes.at(index).is_visit = true;
+    all_nodes.at(index).cost = count_cost(cost_map.at(top.cur_x).at(top.cur_y));
 
-      if(all_nodes.at(index).cost == POT_HIGH)
-        all_nodes.at(index).is_obstacle = true;
-      else
-        all_nodes.at(index).is_obstacle = false;
+    if(all_nodes.at(index).cost == POT_HIGH)
+      all_nodes.at(index).is_obstacle = true;
+    else
+      all_nodes.at(index).is_obstacle = false;
 
-      if(index == target_index) {
-        for(int i = 0; i < all_nodes.size(); ++i) {
-           new_cost_map[i / 2][i % 2] = all_nodes.at(i).cost;
-        }
-        return true;
+    if(index == target_index) {
+      for(int i = 0; i < all_nodes.size(); ++i) {
+        new_cost_map[i / 2][i % 2] = all_nodes.at(i).cost;
       }
-      //检查右边的点
-      add_data(top.cur_x + 1, top.cur_y, all_nodes.at(index).cost, top.cur_x, top.cur_y);
-      //检查左边的点
-      add_data(top.cur_x - 1, top.cur_y, all_nodes.at(index).cost, top.cur_x, top.cur_y);
-      //检查上面的点
-      add_data(top.cur_x, top.cur_y - 1, all_nodes.at(index).cost, top.cur_x, top.cur_y);
-      //检查下面的点
-      add_data(top.cur_x, top.cur_y + 1, all_nodes.at(index).cost, top.cur_x, top.cur_y);
-      cur_iter++;
+      return true;
     }
-    return false;
+    //检查右边的点
+    add_data(top.cur_x + 1, top.cur_y, all_nodes.at(index).cost, top.cur_x, top.cur_y);
+    //检查左边的点
+    add_data(top.cur_x - 1, top.cur_y, all_nodes.at(index).cost, top.cur_x, top.cur_y);
+    //检查上面的点
+    add_data(top.cur_x, top.cur_y - 1, all_nodes.at(index).cost, top.cur_x, top.cur_y);
+    //检查下面的点
+    add_data(top.cur_x, top.cur_y + 1, all_nodes.at(index).cost, top.cur_x, top.cur_y);
+    cur_iter++;
+  }
+  return false;
 }
 
 void dijkstra_planner2d::add_data(const int &x, const int &y, const double &cost, const int &farther_x, const int &farther_y) {
@@ -101,7 +112,7 @@ void dijkstra_planner2d::add_data(const int &x, const int &y, const double &cost
     return;
   }
 
- //如果之前的代价比这次大，说明这次优，选择这一次
+  //如果之前的代价比这次大，说明这次优，选择这一次
   if(data.is_visit) {
     if(cost + 1 < data.cost) {
       data.cost = cost + 1;//1是距离
@@ -162,15 +173,15 @@ double dijkstra_planner2d::get_robot_cost(const int &x, const int &y) {
 }
 
 double dijkstra_planner2d::get_robot_cost(const int &x, const int &y, const robot_body2d &body) {
-   double cost = 0.0;
-   for(const auto &val: body.body) {
-     int raw_cost = cost_map.at(val.pos_x).at(val.pos_y);
-     if(raw_cost >= lethal_cost - 5 || ((!is_plan_unknow)&&raw_cost == un_know_cost)) //5是远离障碍物的点距离，可以配置,需要按实际情况配置
-       return -1.0;
-     else
-       cost += cost * cost_scale;//需要按实际情况配置
-   }
-   return cost;
+  double cost = 0.0;
+  for(const auto &val: body.body) {
+    int raw_cost = cost_map.at(val.pos_x).at(val.pos_y);
+    if(raw_cost >= lethal_cost - 5 || ((!is_plan_unknow)&&raw_cost == un_know_cost)) //5是远离障碍物的点距离，可以配置,需要按实际情况配置
+      return -1.0;
+    else
+      cost += cost * cost_scale;//需要按实际情况配置
+  }
+  return cost;
 }
 
 bool dijkstra_planner2d::make_path(unsigned char *map, const int &size_x, const int &size_y, const pos2d &start, pos2d &target) {

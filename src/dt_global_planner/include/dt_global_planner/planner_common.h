@@ -90,6 +90,14 @@ struct path_node3d {
   double cost;        //该节点的代价
 };
 
+//比较器，从大到小排序
+struct greater1 {
+        bool operator()(const path_node2d& a, const path_node2d& b) const {
+            return a.cost > b.cost;
+        }
+};
+
+
 const double POT_HIGH = 1.0e10; //考虑距离信息的最大的代价，为初始化点和障碍物点
 
 #endif // PLANNER_COMMON_H
