@@ -123,6 +123,8 @@ struct greater1 {
         }
 };
 
+//
+
 //2d bresenham
 void bresenham2d(const int &start_x, const int &start_y, const int &end_x, const int &end_y, std::vector<pos2d> &data) {
    data.clear();

@@ -275,8 +275,6 @@ public:
     is_get_map = true;
 
   }
-
-
 protected:
   int map_size_z; //地图的高度
   pos3d start_pos3d;//路径的起点3d
