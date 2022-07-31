@@ -49,6 +49,7 @@ bool prm_planner2d::get_path(path2d &path) {
   if(is_dijkstra) {
     //dijkstra
 
+    //利用map进行查找
 
   }
   else {
