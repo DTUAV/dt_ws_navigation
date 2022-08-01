@@ -94,13 +94,11 @@ dt_network_client::dt_network_client(int argc, char **argv)
   }
 }
 
-
 dt_network_client::~dt_network_client()
 {
   close(_socketFd);
   pthread_exit(0);
 }
-
 
 void *dt_network_client::data_recv(void *arg)
 {

@@ -125,11 +125,6 @@ INCLUDE_DIRECTORIES(${EIGEN3_INCLUDE_DIR})
    src/icp3d.cpp
  )
 
-add_library(data_coder
-    src/data_endecoder.cpp
-    src/util.cpp
-)
-
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
@@ -141,7 +136,7 @@ add_library(data_coder
 # add_executable(${PROJECT_NAME}_node src/lidar_slam_node.cpp)
 add_executable(test_icp_node test/test_icp2d.cpp)
 add_executable(test_icp3d_node test/test_icp3d.cpp)
-
+add_executable(test_data_endecoder test/test_data_endecoder.cpp  src/data_endecoder.cpp  src/util.cpp)
 #add_executable(test_lidar_odom test/test_lidar_odom.cpp)
 
 ## Rename C++ executable without prefix
@@ -158,6 +153,14 @@ add_executable(test_icp3d_node test/test_icp3d.cpp)
 # target_link_libraries(${PROJECT_NAME}_node
 #   ${catkin_LIBRARIES}
 # )
+target_link_libraries(test_data_endecoder
+    ${catkin_LIBRARIES}
+    -lzstd
+)
+
+
+
+
 target_link_libraries(test_icp3d_node
     ${catkin_LIBRARIES}
     lidar_slam_icp

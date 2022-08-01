@@ -8,8 +8,8 @@
 #include <math.h>
 #include <tf/tf.h>
 
-std::pair<std::string, bool> pack_data(const int &id, const int &scan_size, const int &pos_size, const int &num_point, const sensor_msgs::LaserScanConstPtr& scan_msg, const nav_msgs::OdometryConstPtr& odom_msg);
-bool uppack_data(const std::string &data, sensor_msgs::LaserScan::Ptr &scan_msg, nav_msgs::Odometry::Ptr &odom_msg);
+std::pair<std::string, bool> pack_data(const int &id, const int &scan_size, const int &pos_size, const int &num_point, const sensor_msgs::LaserScan &scan_msg, const nav_msgs::Odometry &odom_msg);
+bool unpack_data(const std::string &data, sensor_msgs::LaserScan &scan_msg, nav_msgs::Odometry &odom_msg);
 
 //将一个位置浮点数转换为一个字符串（bit为整数位，小数位为2位）
 std::pair<std::string, bool> pose_to_string(const float &data, const int &bit);

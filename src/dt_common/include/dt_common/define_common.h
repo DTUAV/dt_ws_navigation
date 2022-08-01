@@ -278,6 +278,12 @@ struct MissionWaypointsMessage {
   XTOSTRUCT(O(xs, ys, zs));
 };
 
+#define Lidar2dMessageID 611
+struct Lidar2dMessage
+{
+  std::string data;
+  XTOSTRUCT(O(data));
+};
 
 
 }
